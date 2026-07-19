@@ -1,5 +1,6 @@
 import { ParserError } from "../../security/errors";
 import type { MarkingScheme } from "../../shared/markingScheme";
+import type { ColoredOptionRun } from "./colorExtractor";
 
 export interface ExtractedCandidate {
   name?: string;
@@ -20,6 +21,7 @@ export type ExtractedOutcome = "correct" | "wrong" | "skipped";
 
 export interface ExtractedQuestion {
   questionNumber: number;
+  questionId?: string;
   questionText?: string;
   subject: string;
   options: string[];
@@ -38,13 +40,16 @@ export interface ExtractedPdfResult {
 const DEFAULT_SUBJECT = "General";
 
 /**
- * Response-sheet PDFs from different exam boards vary hugely in layout,
- * but the ones that are text-based (not scanned images) consistently
- * use "Label : Value" lines for candidate/exam metadata and a repeating
- * "Q<number> ... Your Answer ... Correct Answer" block shape for
- * questions. This extractor works from that generic line structure
- * rather than any one exam's specific wording, mirroring the approach
- * used for DigiAlm's HTML structure.
+ * Response-sheet PDFs from different exam boards vary in layout. This
+ * extractor targets the confirmed real structure (verified against a
+ * real sample PDF, 2026-07): "Label : Value" lines for candidate/exam
+ * metadata, "Q.<n>" question headers, numbered options ("1. text" .. "4.
+ * text"), and a per-question metadata block with "Question ID",
+ * "Status", and a numeric "Chosen Option : N" (or "--") field — the
+ * same shape used by the DigiAlm HTML parser, since this vendor's PDF
+ * export mirrors its HTML response-sheet layout. Older/other PDF
+ * formats that instead print "Your Answer :" / "Correct Answer :" text
+ * labels are still supported as a fallback.
  */
 
 const LABEL_VALUE_LINE = /^([A-Za-z][A-Za-z .\/()-]{1,40}?)\s*[:.]\s*(.+)$/;
@@ -82,137 +87,266 @@ function findLabelValue(map: Map<string, string>, ...candidates: string[]): stri
   return undefined;
 }
 
-function extractCandidate(map: Map<string, string>): ExtractedCandidate {
+const KNOWN_LABEL_PATTERNS: { key: string; pattern: RegExp }[] = [
+  { key: "rollNo", pattern: /Roll\s*No\.?/i },
+  { key: "applicationNo", pattern: /Application\s*No\.?/i },
+  { key: "participantName", pattern: /Participant\s*Name/i },
+  { key: "candidateName", pattern: /Candidate\s*Name/i },
+  { key: "testCenterName", pattern: /Test\s*Cent(?:er|re)\s*Name/i },
+  { key: "testDate", pattern: /Test\s*Date/i },
+  { key: "testTime", pattern: /Test\s*Time/i },
+  { key: "subject", pattern: /Subject/i },
+];
+const METADATA_BLOCK_END_PATTERN = /Application\s*Photograph|Registration\s*photograph|\*\s*Note/i;
+
+/**
+ * Some PDF exports wrap a label onto its own line, separate from its
+ * value (e.g. "Participant" on one line, "Name MANOJ KUMAR JENA" on the
+ * next) — no colon separates them at all, so simple per-line "Label :
+ * Value" matching misses them. This scans the whole candidate/exam
+ * metadata region as one flattened blob instead: newlines are collapsed
+ * to spaces, each known label's position is located, and the value is
+ * whatever text falls between that label and the next known label (or
+ * the end of the metadata block).
+ */
+function extractKnownLabelValues(pdfText: string): Map<string, string> {
+  const flat = pdfText.replace(/\r?\n/g, " ").replace(/\s+/g, " ");
+  const endBoundaryMatch = flat.match(METADATA_BLOCK_END_PATTERN);
+  const blockEnd = endBoundaryMatch?.index ?? flat.length;
+
+  const matches: { key: string; start: number; end: number }[] = [];
+  for (const { key, pattern } of KNOWN_LABEL_PATTERNS) {
+    const match = flat.match(pattern);
+    if (match && match.index !== undefined && match.index < blockEnd) {
+      matches.push({ key, start: match.index, end: match.index + match[0].length });
+    }
+  }
+  matches.sort((a, b) => a.start - b.start);
+
+  const values = new Map<string, string>();
+  for (let i = 0; i < matches.length; i++) {
+    const current = matches[i];
+    const nextStart = matches[i + 1]?.start ?? blockEnd;
+    const rawValue = flat.slice(current.end, nextStart).replace(/^[:.\s]+/, "").trim();
+    if (rawValue) values.set(current.key, rawValue);
+  }
+  return values;
+}
+
+function extractCandidate(map: Map<string, string>, known: Map<string, string>): ExtractedCandidate {
   return {
-    name: findLabelValue(map, "candidate name", "participant name", "name"),
-    rollNumber: findLabelValue(map, "roll no", "roll number", "registration no", "registration number"),
-    applicationNumber: findLabelValue(map, "application no", "application number"),
+    name: known.get("participantName") ?? known.get("candidateName") ?? findLabelValue(map, "participant name", "candidate name", "name"),
+    rollNumber: known.get("rollNo") ?? findLabelValue(map, "roll no", "roll number", "registration no", "registration number"),
+    applicationNumber: known.get("applicationNo") ?? findLabelValue(map, "application no", "application number"),
   };
 }
 
-function extractExam(map: Map<string, string>): ExtractedExam {
+function extractExam(map: Map<string, string>, known: Map<string, string>): ExtractedExam {
   return {
-    examName: findLabelValue(map, "exam name", "test name", "examination name", "subject"),
+    examName: known.get("subject") ?? findLabelValue(map, "subject", "exam name", "test name", "examination name"),
     post: findLabelValue(map, "post name", "post applied for", "post"),
-    examDate: findLabelValue(map, "test date", "exam date", "date"),
-    shift: findLabelValue(map, "test time", "shift", "session"),
-    centre: findLabelValue(map, "test center name", "test centre name", "centre name", "exam centre"),
+    examDate: known.get("testDate") ?? findLabelValue(map, "test date", "exam date"),
+    shift: known.get("testTime") ?? findLabelValue(map, "test time", "shift", "session"),
+    centre:
+      known.get("testCenterName") ??
+      findLabelValue(map, "test center name", "test centre name", "centre name", "exam centre"),
     paperLanguage: findLabelValue(map, "medium", "question paper language", "language"),
   };
 }
 
-const QUESTION_START = /^Q(?:uestion)?\.?\s*[-:.]?\s*(\d+)\b/i;
-const SECTION_LINE = /^(?:section|subject)\s*[:.]?\s*(.+)$/i;
+const QUESTION_START = /^Q\.?\s*(\d+)\b/i;
+const SECTION_LINE = /^Section\s*:\s*(.+)$/i;
+const OPTION_NUMBERED_LINE = /^\s*([1-4])[.)]\s*(.+)$/;
+const QUESTION_ID_PATTERN = /Question\s*ID\s*[:.]?\s*([\w-]+)/i;
+const CHOSEN_OPTION_PATTERN = /Chosen\s*Option\s*[:\-]?\s*(\d|--|-)/i;
+const STATUS_PATTERN = /Status\s*[:\-]?\s*([^\n]+)/i;
+const NOT_ANSWERED_STATUS_PATTERN = /not\s*answered|un-?attempted/i;
+
+// Fallback patterns for older/other PDF formats that print the answer
+// as text labels rather than a numbered "Chosen Option".
 const YOUR_ANSWER_LINE = /^(?:your|chosen|selected)\s*answer\s*[:.]?\s*(.*)$/i;
 const CORRECT_ANSWER_LINE = /^correct\s*answer\s*[:.]?\s*(.*)$/i;
-const STATUS_LINE = /^status\s*[:.]?\s*(.+)$/i;
-const OPTION_LINE = /^(?:\(?[A-Da-d1-4]\)?[).])\s*(.+)$/;
-const NOT_ANSWERED_PATTERN = /not\s*answered|un-?attempted|^-?$/i;
+const NOT_ANSWERED_VALUE_PATTERN = /not\s*answered|un-?attempted|^-?$/i;
 
-/**
- * Scans the plain-text lines for repeating question blocks. Nothing here
- * assumes a fixed question count, fixed subject list, or fixed number of
- * options — every value is read from the text itself.
- */
-function extractQuestions(lines: string[]): ExtractedQuestion[] {
-  const questions: ExtractedQuestion[] = [];
+interface QuestionBlock {
+  questionNumber: number;
+  subject: string;
+  lines: string[];
+}
+
+/** Splits the page text into per-question blocks, tracking subject via "Section :" markers in document order. */
+function splitIntoBlocks(lines: string[]): QuestionBlock[] {
+  const blocks: QuestionBlock[] = [];
   let currentSubject = DEFAULT_SUBJECT;
-
-  let current: {
-    questionNumber: number;
-    subject: string;
-    textLines: string[];
-    options: string[];
-    selectedAnswer?: string;
-    correctAnswer?: string;
-    status?: string;
-  } | null = null;
-
-  function flush() {
-    if (!current) return;
-    const questionText = current.textLines.join(" ").trim() || undefined;
-
-    let outcome: ExtractedOutcome;
-    const selected = current.selectedAnswer?.trim();
-    const correct = current.correctAnswer?.trim();
-    const status = current.status?.toLowerCase() ?? "";
-
-    if (!selected || NOT_ANSWERED_PATTERN.test(selected) || /not\s*answered/i.test(status)) {
-      outcome = "skipped";
-    } else if (correct && selected.toLowerCase() === correct.toLowerCase()) {
-      outcome = "correct";
-    } else if (/correct/i.test(status) && !/incorrect|wrong/i.test(status)) {
-      outcome = "correct";
-    } else {
-      outcome = "wrong";
-    }
-
-    questions.push({
-      questionNumber: current.questionNumber,
-      questionText,
-      subject: current.subject,
-      options: current.options,
-      selectedAnswer: selected && !NOT_ANSWERED_PATTERN.test(selected) ? selected : undefined,
-      correctAnswer: correct,
-      outcome,
-    });
-    current = null;
-  }
+  let current: QuestionBlock | null = null;
 
   for (const rawLine of lines) {
     const line = rawLine.trim();
     if (!line) continue;
 
     const sectionMatch = line.match(SECTION_LINE);
-    if (sectionMatch && !QUESTION_START.test(line)) {
+    if (sectionMatch) {
       currentSubject = sectionMatch[1].trim();
       continue;
     }
 
     const questionMatch = line.match(QUESTION_START);
     if (questionMatch) {
-      flush();
-      current = {
-        questionNumber: Number(questionMatch[1]),
-        subject: currentSubject,
-        textLines: [line.replace(QUESTION_START, "").trim()].filter(Boolean),
-        options: [],
-      };
+      current = { questionNumber: Number(questionMatch[1]), subject: currentSubject, lines: [line] };
+      blocks.push(current);
       continue;
     }
 
-    if (!current) continue; // ignore preamble/metadata lines before the first question
-
-    const yourAnswerMatch = line.match(YOUR_ANSWER_LINE);
-    if (yourAnswerMatch) {
-      current.selectedAnswer = yourAnswerMatch[1];
-      continue;
-    }
-
-    const correctAnswerMatch = line.match(CORRECT_ANSWER_LINE);
-    if (correctAnswerMatch) {
-      current.correctAnswer = correctAnswerMatch[1];
-      continue;
-    }
-
-    const statusMatch = line.match(STATUS_LINE);
-    if (statusMatch) {
-      current.status = statusMatch[1];
-      continue;
-    }
-
-    const optionMatch = line.match(OPTION_LINE);
-    if (optionMatch) {
-      current.options.push(optionMatch[1].trim());
-      continue;
-    }
-
-    // Otherwise treat as continuation of the question text.
-    current.textLines.push(line);
+    if (current) current.lines.push(line);
   }
-  flush();
 
-  return questions;
+  return blocks;
+}
+
+/**
+ * Parses one question block into a normalized question, given a shared
+ * cursor into the document's ordered colored-option-run list (used to
+ * determine the objectively correct option — see colorExtractor.ts).
+ */
+function parseBlock(
+  block: QuestionBlock,
+  coloredRuns: ColoredOptionRun[],
+  colorCursor: { index: number }
+): ExtractedQuestion {
+  const questionIdMatch = block.lines.join("\n").match(QUESTION_ID_PATTERN);
+
+  const options: { number: number; text: string }[] = [];
+  const textLines: string[] = [];
+  let sawAns = false;
+
+  for (const line of block.lines) {
+    if (/^Ans\b/i.test(line)) {
+      sawAns = true;
+      // "Ans" and the first option are sometimes on the same line
+      // (e.g. "Ans \t1. ₹13,682") — don't discard that option.
+      const remainder = line.replace(/^Ans\b\s*/i, "");
+      const inlineOptMatch = remainder.match(OPTION_NUMBERED_LINE);
+      if (inlineOptMatch) {
+        options.push({ number: Number(inlineOptMatch[1]), text: inlineOptMatch[2].trim() });
+      }
+      continue;
+    }
+    if (QUESTION_START.test(line)) {
+      textLines.push(line.replace(QUESTION_START, "").trim());
+      continue;
+    }
+    const optMatch = line.match(OPTION_NUMBERED_LINE);
+    if (optMatch) {
+      options.push({ number: Number(optMatch[1]), text: optMatch[2].trim() });
+      continue;
+    }
+    if (
+      QUESTION_ID_PATTERN.test(line) ||
+      CHOSEN_OPTION_PATTERN.test(line) ||
+      STATUS_PATTERN.test(line) ||
+      /^Question\s*Type/i.test(line) ||
+      /^Option\s*\d+\s*ID/i.test(line)
+    ) {
+      continue; // metadata lines, not question text
+    }
+    if (!sawAns) textLines.push(line);
+  }
+
+  const questionText = textLines.join(" ").trim() || undefined;
+
+  // Determine the correct option: prefer color-derived data (this
+  // vendor's PDFs render the correct option's text in green), matched
+  // in document order against this block's own option count.
+  let correctOptionNumber: number | undefined;
+  let correctAnswerFromColor: string | undefined;
+  if (options.length > 0 && colorCursor.index < coloredRuns.length) {
+    const slice = coloredRuns.slice(colorCursor.index, colorCursor.index + options.length);
+    const allNumbersMatch = slice.length === options.length && slice.every((r, i) => r.number === options[i].number);
+    if (allNumbersMatch) {
+      colorCursor.index += options.length;
+      const correctRun = slice.find((r) => r.isCorrect);
+      if (correctRun) {
+        correctOptionNumber = correctRun.number;
+        correctAnswerFromColor = correctRun.text || options.find((o) => o.number === correctRun.number)?.text;
+      }
+    }
+  }
+
+  // Fallback for PDFs that print a "Correct Answer :" text label instead.
+  let correctAnswer = correctAnswerFromColor;
+  if (!correctAnswer) {
+    const correctAnswerLine = block.lines.find((l) => CORRECT_ANSWER_LINE.test(l));
+    const correctAnswerMatch = correctAnswerLine?.match(CORRECT_ANSWER_LINE);
+    correctAnswer = correctAnswerMatch?.[1]?.trim() || undefined;
+  }
+
+  // Selected answer: prefer the numeric "Chosen Option" field (real,
+  // confirmed structure); fall back to a "Your Answer :" text label.
+  const chosenLine = block.lines.find((l) => CHOSEN_OPTION_PATTERN.test(l));
+  const chosenMatch = chosenLine?.match(CHOSEN_OPTION_PATTERN);
+  const chosenRaw = chosenMatch?.[1];
+  const chosenOptionNumber = chosenRaw && /^\d$/.test(chosenRaw) ? Number(chosenRaw) : null;
+  const selectedFromNumber = chosenOptionNumber
+    ? options.find((o) => o.number === chosenOptionNumber)?.text
+    : undefined;
+
+  let selectedAnswer = selectedFromNumber;
+  if (!selectedAnswer && chosenLine === undefined) {
+    const yourAnswerLine = block.lines.find((l) => YOUR_ANSWER_LINE.test(l));
+    const yourAnswerMatch = yourAnswerLine?.match(YOUR_ANSWER_LINE);
+    const raw = yourAnswerMatch?.[1]?.trim();
+    selectedAnswer = raw && !NOT_ANSWERED_VALUE_PATTERN.test(raw) ? raw : undefined;
+  }
+
+  const statusLine = block.lines.find((l) => STATUS_PATTERN.test(l));
+  const statusMatch = statusLine?.match(STATUS_PATTERN);
+  const statusText = statusMatch?.[1]?.trim() ?? "";
+
+  let outcome: ExtractedOutcome;
+  const hasChosenSignal = chosenLine !== undefined; // this PDF format has an explicit Chosen Option field
+  if (hasChosenSignal) {
+    if (chosenOptionNumber === null || NOT_ANSWERED_STATUS_PATTERN.test(statusText)) {
+      outcome = "skipped";
+    } else if (correctOptionNumber !== undefined && chosenOptionNumber === correctOptionNumber) {
+      outcome = "correct";
+    } else {
+      outcome = "wrong";
+    }
+  } else {
+    // Fallback text-label format.
+    if (!selectedAnswer || NOT_ANSWERED_STATUS_PATTERN.test(statusText)) {
+      outcome = "skipped";
+    } else if (correctAnswer && selectedAnswer.toLowerCase() === correctAnswer.toLowerCase()) {
+      outcome = "correct";
+    } else {
+      outcome = "wrong";
+    }
+  }
+
+  return {
+    questionNumber: block.questionNumber,
+    questionId: questionIdMatch?.[1],
+    questionText,
+    subject: block.subject,
+    options: options.map((o) => o.text),
+    selectedAnswer,
+    correctAnswer,
+    outcome,
+  };
+}
+
+/**
+ * Scans the plain-text lines for repeating question blocks. Nothing
+ * here assumes a fixed question count, fixed subject list, or fixed
+ * number of options — every value is read from the text itself.
+ * `coloredRuns` (optional) supplies color-derived correctness data
+ * extracted separately from the same PDF (see colorExtractor.ts); pass
+ * an empty array to disable it and rely on text-label fallbacks only.
+ */
+function extractQuestions(lines: string[], coloredRuns: ColoredOptionRun[]): ExtractedQuestion[] {
+  const blocks = splitIntoBlocks(lines);
+  const colorCursor = { index: 0 };
+  return blocks.map((block) => parseBlock(block, coloredRuns, colorCursor));
 }
 
 const POSITIVE_MARK_PATTERNS = [
@@ -238,7 +372,7 @@ function extractMarkingScheme(fullText: string): MarkingScheme | null {
   return null;
 }
 
-export function extractPdfResult(pdfText: string): ExtractedPdfResult {
+export function extractPdfResult(pdfText: string, coloredRuns: ColoredOptionRun[] = []): ExtractedPdfResult {
   if (!pdfText || pdfText.trim().length === 0) {
     throw new ParserError(
       "PARSING_FAILED",
@@ -249,9 +383,10 @@ export function extractPdfResult(pdfText: string): ExtractedPdfResult {
 
   const lines = pdfText.split(/\r?\n/);
   const labelValueMap = buildLabelValueMap(lines);
-  const candidate = extractCandidate(labelValueMap);
-  const exam = extractExam(labelValueMap);
-  const questions = extractQuestions(lines);
+  const knownLabelValues = extractKnownLabelValues(pdfText);
+  const candidate = extractCandidate(labelValueMap, knownLabelValues);
+  const exam = extractExam(labelValueMap, knownLabelValues);
+  const questions = extractQuestions(lines, coloredRuns);
   const markingScheme = extractMarkingScheme(pdfText);
 
   if (questions.length === 0) {

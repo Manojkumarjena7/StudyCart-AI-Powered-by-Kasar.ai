@@ -133,7 +133,7 @@ function extractExam(map: Map<string, string>): ExtractedExam {
  * (b) read the "Chosen Option" number, (c) compare the two numbers.
  */
 const QUESTION_BLOCK_SELECTOR = ".question-pnl, .questionPnl, .question-container, div[id^='question']";
-const TICK_ICON_PATTERN = /tick|check(mark)?/i;
+const TICK_ICON_PATTERN = /tick|check(?!ed)(?:mark)?/i;
 const GREEN_COLOR_PATTERN =
   /color\s*:\s*(?:green|#0?[0-9a-f]?[89a-f][0-9a-f]?0[0-9a-f]?0|rgba?\(\s*0\s*,\s*1[0-9]{2}\s*,\s*0)/i;
 const OPTION_NUMBERED_PATTERN = /^\s*([1-4])[.)]\s*([\s\S]+)$/;

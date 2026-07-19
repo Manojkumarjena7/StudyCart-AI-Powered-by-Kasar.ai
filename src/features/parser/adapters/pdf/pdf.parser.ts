@@ -5,6 +5,7 @@ import type { AnalyzerInput, NormalizedResult } from "@/types/domain";
 import type { ParserAdapter } from "../../parserAdapter";
 import { ParserError } from "../../security/errors";
 import { extractPdfResult } from "./textExtractor";
+import { extractColoredOptionRuns } from "./colorExtractor";
 import { normalizePdfResult } from "./normalize";
 
 const MAX_PDF_BYTES = 15 * 1024 * 1024; // 15 MB — generous for a text-based response sheet
@@ -68,10 +69,11 @@ export const pdfParser: ParserAdapter = {
     }
 
     let text: string;
+    let buffer: Buffer;
     try {
       ensureWorkerConfigured();
       const arrayBuffer = await input.file.arrayBuffer();
-      const buffer = Buffer.from(arrayBuffer);
+      buffer = Buffer.from(arrayBuffer);
       const parser = new PDFParse({ data: buffer });
       const result = await parser.getText();
       text = result.text ?? "";
@@ -83,7 +85,20 @@ export const pdfParser: ParserAdapter = {
       );
     }
 
-    const extracted = extractPdfResult(text);
+    // Some response-sheet PDFs (this vendor's export format) don't state
+    // the correct answer as extractable text at all — it's conveyed only
+    // by the color the option text is drawn in. Reading that color is a
+    // best-effort addition: if it fails or the PDF isn't this format, we
+    // just get an empty array back and extractPdfResult falls back to
+    // whatever text-based signals are available.
+    let coloredRuns: Awaited<ReturnType<typeof extractColoredOptionRuns>> = [];
+    try {
+      coloredRuns = await extractColoredOptionRuns(buffer);
+    } catch {
+      coloredRuns = [];
+    }
+
+    const extracted = extractPdfResult(text, coloredRuns);
     const normalized = normalizePdfResult(extracted);
 
     return {

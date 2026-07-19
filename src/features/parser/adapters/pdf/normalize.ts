@@ -41,6 +41,7 @@ export function normalizePdfResult(extracted: ExtractedPdfResult): NormalizedRes
     outcome: q.outcome,
     marksAwarded:
       q.outcome === "correct" ? positivePerQuestion : q.outcome === "wrong" ? -negativePerQuestion : 0,
+    questionId: q.questionId,
     questionText: q.questionText,
     options: q.options.length > 0 ? q.options : undefined,
     selectedAnswer: q.selectedAnswer,

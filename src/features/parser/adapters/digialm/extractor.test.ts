@@ -133,3 +133,31 @@ describe("extractDigiAlmResult", () => {
     );
   });
 });
+
+describe("extractDigiAlmResult ('checked' selection-state regression guard)", () => {
+  // Regression test for a real bug: the tick-icon regex used to match
+  // "checked" (a common CSS/attribute keyword marking which radio input
+  // the CANDIDATE selected), not just "tick"/"checkmark" (markers for
+  // the objectively CORRECT answer). If the selected-but-wrong option
+  // happened to sort before the truly correct option, that false match
+  // caused correct/wrong outcomes to invert.
+  it("does not mistake a 'checked' (selected) class for the tick-marked correct option", () => {
+    const html = `
+      <html><body>
+        <table><tr><td>Participant Name</td><td>: Test</td></tr></table>
+        <div class="question-pnl">
+          <div>Q.1 Sample question</div>
+          <ul>
+            <li class="option checked">1. Chosen but wrong answer</li>
+            <li class="option">2. <img alt="tick" src="tick.png"/>Correct answer</li>
+          </ul>
+          <div>Chosen Option : 1</div>
+        </div>
+      </body></html>
+    `;
+    const result = extractDigiAlmResult(html);
+    expect(result.questions[0].correctAnswer).toBe("Correct answer");
+    expect(result.questions[0].selectedAnswer).toBe("Chosen but wrong answer");
+    expect(result.questions[0].outcome).toBe("wrong");
+  });
+});

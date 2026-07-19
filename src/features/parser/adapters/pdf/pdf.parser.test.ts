@@ -48,16 +48,28 @@ describe("pdfParser.parse (integration, real PDF binary via pdf-parse)", () => {
       consentGiven: true,
     });
 
-    expect(result.candidate.name).toBe("Test Candidate");
-    expect(result.candidate.rollNumber).toBe("PDF123456");
+    expect(result.candidate.name).toBe("TEST CANDIDATE");
+    expect(result.candidate.rollNumber).toBe("PDF987654321");
     expect(result.candidate.category).toBe("SEBC"); // from the form
     expect(result.candidate.gender).toBe("Male"); // from the form
-    expect(result.exam.examName).toBe("Sample State PSC Recruitment Exam 2026");
+    expect(result.exam.examName).toContain("Conduct of Written Test for the posts of RI");
     expect(result.questions).toHaveLength(4);
     expect(result.exam.markingScheme).toEqual({
       positiveMarksPerQuestion: 1,
       negativeMarksPerQuestion: 0.25,
     });
+  });
+
+  it("determines correctness from the color-derived correct option, matching the DigiAlm parser's approach", async () => {
+    const result = await pdfParser.parse({
+      sourceType: "pdf",
+      file: sampleFile,
+      category: "General",
+      consentGiven: true,
+    });
+
+    const outcomes = result.questions.map((q) => q.outcome);
+    expect(outcomes).toEqual(["correct", "wrong", "skipped", "correct"]);
   });
 
   it("produces identical results for the same PDF parsed twice (deterministic)", async () => {
