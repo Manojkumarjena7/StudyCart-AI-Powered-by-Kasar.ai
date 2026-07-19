@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<!--
+  SANITIZED TEST FIXTURE — models the CONFIRMED real DigiAlm structure,
+  verified against a real response sheet (RI_ANSWEKEY.pdf, supplied
+  2026-07-06): options are numbered 1-4, the objectively correct option
+  carries a green tick icon (independent of what the candidate chose),
+  and the candidate's actual answer is a separate numeric "Chosen
+  Option" field in the metadata box below each question, alongside a
+  "Status" field describing attempt state (not correctness). All
+  candidate/question content below is fabricated for testing only.
+-->
+<html lang="en">
+<head><meta charset="utf-8"><title>Response Sheet</title></head>
+<body>
+  <table class="candidate-info">
+    <tr><td>Roll No.</td><td>: 1111111111</td></tr>
+    <tr><td>Application No.</td><td>: XX000000CRE-00000000</td></tr>
+    <tr><td>Participant Name</td><td>: TEST CANDIDATE</td></tr>
+    <tr><td>Test Center Name</td><td>: Sample Test Centre Pvt Ltd</td></tr>
+    <tr><td>Test Date</td><td>: 04/06/2026</td></tr>
+    <tr><td>Test Time</td><td>: 4:00 PM - 5:30 PM</td></tr>
+    <tr><td>Subject</td><td>: Conduct of Written Test for the posts of RI under CRE 2025</td></tr>
+  </table>
+
+  <div class="note">
+    Correct Answer will carry 1 mark per Question.
+    Incorrect Answer will carry 0.25 Negative mark per Question.
+    1. Options shown in green color with a tick icon are correct.
+    2. Chosen option on the right of the question indicates the option selected by the candidate.
+  </div>
+
+  <div>Section : Mathematics</div>
+
+  <!-- Q1: candidate chose option 3, which is also correct -->
+  <div class="question-pnl" id="question1">
+    <div>Q.1 Which river flows through Cuttack?</div>
+    <div>Ans</div>
+    <ul>
+      <li>1. Ganga</li>
+      <li>2. Godavari</li>
+      <li>3. Mahanadi <img alt="tick" src="tick.png"/></li>
+      <li>4. Krishna</li>
+    </ul>
+    <table>
+      <tr><td>Question Type</td><td>MCQ</td></tr>
+      <tr><td>Question ID</td><td>Q1001</td></tr>
+      <tr><td>Status</td><td>Answered</td></tr>
+      <tr><td>Chosen Option</td><td>3</td></tr>
+    </table>
+  </div>
+
+  <!-- Q2: candidate chose option 1, correct is option 2 -->
+  <div class="question-pnl" id="question2">
+    <div>Q.2 What is the capital of Odisha?</div>
+    <div>Ans</div>
+    <ul>
+      <li>1. Cuttack</li>
+      <li>2. Bhubaneswar <img alt="tick" src="tick.png"/></li>
+      <li>3. Puri</li>
+      <li>4. Rourkela</li>
+    </ul>
+    <table>
+      <tr><td>Question Type</td><td>MCQ</td></tr>
+      <tr><td>Question ID</td><td>Q1002</td></tr>
+      <tr><td>Status</td><td>Answered</td></tr>
+      <tr><td>Chosen Option</td><td>1</td></tr>
+    </table>
+  </div>
+
+  <!-- Q3: not answered -->
+  <div class="question-pnl" id="question3">
+    <div>Q.3 2 + 2 * 2 = ?</div>
+    <div>Ans</div>
+    <ul>
+      <li>1. 4</li>
+      <li>2. 6 <img alt="tick" src="tick.png"/></li>
+      <li>3. 8</li>
+    </ul>
+    <table>
+      <tr><td>Question Type</td><td>MCQ</td></tr>
+      <tr><td>Question ID</td><td>Q1003</td></tr>
+      <tr><td>Status</td><td>Not Answered</td></tr>
+      <tr><td>Chosen Option</td><td>--</td></tr>
+    </table>
+  </div>
+
+  <div>Section : General Studies</div>
+
+  <!-- Q4: candidate chose option 1, which is also correct -->
+  <div class="question-pnl" id="question4">
+    <div>Q.4 Who wrote the Odia epic Baisha Koshi Gita?</div>
+    <div>Ans</div>
+    <ul>
+      <li>1. Jagannath Das <img alt="tick" src="tick.png"/></li>
+      <li>2. Sarala Das</li>
+      <li>3. Balaram Das</li>
+      <li>4. Upendra Bhanja</li>
+    </ul>
+    <table>
+      <tr><td>Question Type</td><td>MCQ</td></tr>
+      <tr><td>Question ID</td><td>Q1004</td></tr>
+      <tr><td>Status</td><td>Marked For Review</td></tr>
+      <tr><td>Chosen Option</td><td>1</td></tr>
+    </table>
+  </div>
+</body>
+</html>
