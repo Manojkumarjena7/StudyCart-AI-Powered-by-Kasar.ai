@@ -144,46 +144,48 @@ const SECTION_MARKER_PATTERN = /^Section\s*:\s*.+$/i;
 
 /** Detects the green-tick-icon marker on a specific option element. */
 function hasTickIcon($: CheerioAPI, el: cheerio.Cheerio<AnyNode>): boolean {
-  const style = (el.attr("style") ?? "").toLowerCase();
-  if (GREEN_COLOR_PATTERN.test(style)) return true;
+  // Fast path: DigiAlm marks the correct option with rightAns
+  if (el.hasClass("rightAns")) {
+    return true;
+  }
 
-  const iconMatch = el
-    .find("img, svg, i")
-    .addBack()
-    .filter((_, node) => {
-      const $node = $(node);
-      const alt = ($node.attr("alt") ?? "").toLowerCase();
-      const src = ($node.attr("src") ?? "").toLowerCase();
-      const cls = ($node.attr("class") ?? "").toLowerCase();
-      return TICK_ICON_PATTERN.test(alt) || TICK_ICON_PATTERN.test(src) || TICK_ICON_PATTERN.test(cls);
-    });
-  return iconMatch.length > 0;
+  // Fallback: inspect the image filename
+  const img = el.find("img").first();
+  const src = (img.attr("src") ?? "").toLowerCase();
+
+  if (src.includes("tick.png")) {
+    return true;
+  }
+
+  if (src.includes("cross.png")) {
+    return false;
+  }
+
+  return false;
 }
-
-interface ParsedOption {
-  number: number;
-  text: string;
-  isCorrect: boolean;
-}
-
 /** Finds the 4 numbered option elements inside a question block. */
 function parseOptions($: CheerioAPI, $block: cheerio.Cheerio<AnyNode>): ParsedOption[] {
+
+
+
   const candidates = $block.find("li, tr, td, div, span, p").filter((_, el) => {
     const $el = $(el);
-    // Skip wrapper elements that merely contain a numbered option among
-    // other nested content — we want the most specific element whose own
-    // text is exactly "N. option text".
-    const ownText = $el.clone().children().remove().end().text().trim();
     const fullText = $el.text().trim();
-    return OPTION_NUMBERED_PATTERN.test(fullText) && fullText.length - ownText.length < 40;
-  });
+
+    return OPTION_NUMBERED_PATTERN.test(fullText);
+  });  
 
   const options: ParsedOption[] = [];
   const seenNumbers = new Set<number>();
 
   candidates.each((_, el) => {
     const $el = $(el);
-    const match = $el.text().trim().match(OPTION_NUMBERED_PATTERN);
+    const text = $el
+      .text()
+      .replace(/<!--[\s\S]*?-->/g, "")
+      .trim();
+
+    const match = text.match(OPTION_NUMBERED_PATTERN);
     if (!match) return;
     const number = Number(match[1]);
     if (seenNumbers.has(number)) return; // avoid double-counting nested matches
@@ -205,11 +207,7 @@ function extractQuestions($: CheerioAPI): ExtractedQuestion[] {
   // elements, not descendants of a question block, so subjects are
   // tracked by walking question blocks and section markers together in
   // document order rather than looking inside each block.
-  const sectionMarkers = $("*").filter((_, el) => {
-    const $el = $(el);
-    if ($el.children().length > 0) return false;
-    return SECTION_MARKER_PATTERN.test($el.text().trim());
-  });
+  const sectionMarkers = $(".section-lbl");
 
   const merged = blocks.add(sectionMarkers);
   const questions: ExtractedQuestion[] = [];
@@ -219,14 +217,25 @@ function extractQuestions($: CheerioAPI): ExtractedQuestion[] {
   merged.each((_, node) => {
     const $node = $(node);
 
-    if (SECTION_MARKER_PATTERN.test($node.text().trim()) && !$node.is(QUESTION_BLOCK_SELECTOR)) {
-      currentSubject = $node.text().replace(/^Section\s*:\s*/i, "").trim();
+    
+    
+
+
+    if ($node.hasClass("section-lbl")) {
+      currentSubject =
+        $node.find(".bold").text().trim() ||
+        $node.text().replace(/^Section\s*:\s*/i, "").trim();
       return;
     }
 
     const $block = $node;
     const blockText = $block.text();
     questionNumber += 1;
+
+    const parsedOptions = parseOptions($, $block);
+
+
+      
 
     const questionIdMatch = blockText.match(/Question\s*ID\s*[:.]?\s*([\w-]+)/i);
 
@@ -240,7 +249,13 @@ function extractQuestions($: CheerioAPI): ExtractedQuestion[] {
       questionText = inlineMatch?.[1]?.trim() || undefined;
     }
 
-    const parsedOptions = parseOptions($, $block);
+    
+
+     
+
+    
+    
+    
     const options = parsedOptions.map((o) => o.text);
     const correctOption = parsedOptions.find((o) => o.isCorrect);
     const correctAnswer = correctOption?.text;
