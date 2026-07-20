@@ -39,6 +39,12 @@ export interface ExtractedDigiAlmResult {
   markingScheme: MarkingScheme | null;
 }
 
+interface ParsedOption {
+  number: number;
+  text: string;
+  isCorrect: boolean;
+}
+
 const DEFAULT_SUBJECT = "General";
 
 /**
