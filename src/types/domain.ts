@@ -1,4 +1,4 @@
-// Core domain types for the KaSar Tech student platform.
+// Core domain types for the StudyCart student platform.
 // These types are intentionally shared/generic so future modules
 // (Jobs, Books, Tuition, Question Bank, Mock Tests) can reuse them
 // without re-modelling exam/candidate concepts from scratch.

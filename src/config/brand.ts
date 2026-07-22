@@ -1,28 +1,26 @@
 /**
  * Centralized brand configuration.
  *
- * The student platform is an independent product with its own identity —
- * KaSarTech.AI is the parent technology company, referenced only via a
- * subtle endorsement ("by KaSarTech.AI"), never as the primary product
- * name throughout the UI.
+ * The student platform is an independent product ("StudyCart") with its
+ * own identity — Kasar.ai is the parent technology company, referenced
+ * only via a subtle endorsement ("Powered by Kasar.ai"), never as the
+ * primary product name throughout the UI.
  *
- * `productName` is intentionally a placeholder until the final,
- * independent student-platform brand name is chosen. Changing the
- * product's name platform-wide only requires editing this one file —
- * no component should ever hardcode the product name directly.
+ * Changing the product's name platform-wide only requires editing this
+ * one file — no component should ever hardcode the product name
+ * directly.
  */
 export const brandConfig = {
-  // TODO: replace with the final independent student-platform brand name.
-  productName: "KaSar Exam Analyzer",
-  productShortName: "Exam Analyzer",
+  productName: "StudyCart",
+  productShortName: "StudyCart",
   productDescription:
     "Upload your answer key PDF or paste your response sheet link to instantly calculate your score, accuracy, negative marks, subject performance, and community rank.",
   tagline: "Know Your Score. Understand Your Performance.",
 
-  parentCompanyName: "KaSarTech.AI",
-  // TODO: replace with the live KaSarTech.AI website URL once available.
-  parentCompanyUrl: "https://kasartech.ai",
-  endorsementText: "by KaSarTech.AI",
+  parentCompanyName: "Kasar.ai",
+  // TODO: replace with the live Kasar.ai website URL once available.
+  parentCompanyUrl: "https://kasar.ai",
+  endorsementText: "Powered by Kasar.ai",
 
   location: {
     city: "Bhubaneswar",
@@ -39,7 +37,7 @@ export const brandConfig = {
 
   contact: {
     // TODO: replace with a live, monitored support inbox.
-    supportEmail: "support@kasartech.ai",
+    supportEmail: "support@kasar.ai",
   },
 
   copyrightYear: 2026,

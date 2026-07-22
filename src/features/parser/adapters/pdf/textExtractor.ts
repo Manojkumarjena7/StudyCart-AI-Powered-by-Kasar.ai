@@ -220,40 +220,75 @@ function parseBlock(
   let sawAns = false;
 
   for (const line of block.lines) {
-    if (/^Ans\b/i.test(line)) {
-      sawAns = true;
-      // "Ans" and the first option are sometimes on the same line
-      // (e.g. "Ans \t1. ₹13,682") — don't discard that option.
-      const remainder = line.replace(/^Ans\b\s*/i, "");
-      const inlineOptMatch = remainder.match(OPTION_NUMBERED_LINE);
-      if (inlineOptMatch) {
-        options.push({ number: Number(inlineOptMatch[1]), text: inlineOptMatch[2].trim() });
-      }
-      continue;
-    }
-    if (QUESTION_START.test(line)) {
-      textLines.push(line.replace(QUESTION_START, "").trim());
-      continue;
-    }
-    const optMatch = line.match(OPTION_NUMBERED_LINE);
-    if (optMatch) {
-      options.push({ number: Number(optMatch[1]), text: optMatch[2].trim() });
-      continue;
-    }
-    if (
-      QUESTION_ID_PATTERN.test(line) ||
-      CHOSEN_OPTION_PATTERN.test(line) ||
-      STATUS_PATTERN.test(line) ||
-      /^Question\s*Type/i.test(line) ||
-      /^Option\s*\d+\s*ID/i.test(line)
-    ) {
-      continue; // metadata lines, not question text
-    }
-    if (!sawAns) textLines.push(line);
+
+  // Stop at page footer/instructions
+  if (
+    line.startsWith("Registration") ||
+    line.startsWith("photograph") ||
+    line.startsWith("* Note") ||
+    line.includes("Correct Answer will carry") ||
+    line.includes("Incorrect Answer will carry") ||
+    line.includes("Options shown in green color") ||
+    line.includes("Chosen option on the right") ||
+    line.includes("cdn3.digialm.com") ||
+    line.startsWith("http") ||
+    /^--\s*\d+\s*of\s*\d+\s*--$/.test(line)
+  ) {
+    break;
   }
 
-  const questionText = textLines.join(" ").trim() || undefined;
+  // Handle "Ans 1. xxx"
+  if (/^Ans\b/i.test(line)) {
+    sawAns = true;
 
+    const remainder = line.replace(/^Ans\b\s*/i, "");
+    const inlineOptMatch = remainder.match(OPTION_NUMBERED_LINE);
+
+    if (inlineOptMatch) {
+      options.push({
+        number: Number(inlineOptMatch[1]),
+        text: inlineOptMatch[2].trim(),
+      });
+    }
+
+    continue;
+  }
+
+  if (QUESTION_START.test(line)) {
+    textLines.push(line.replace(QUESTION_START, "").trim());
+    continue;
+  }
+
+  const optMatch = line.match(OPTION_NUMBERED_LINE);
+  if (optMatch) {
+    options.push({
+      number: Number(optMatch[1]),
+      text: optMatch[2].trim(),
+    });
+    continue;
+  }
+
+  if (
+    QUESTION_ID_PATTERN.test(line) ||
+    CHOSEN_OPTION_PATTERN.test(line) ||
+    STATUS_PATTERN.test(line) ||
+    /^Question\s*Type/i.test(line) ||
+    /^Option\s*\d+\s*ID/i.test(line)
+  ) {
+    continue;
+  }
+
+  if (!sawAns) {
+    textLines.push(line);
+  }
+}
+
+  const questionText = textLines.join(" ").trim() || undefined;
+  if (block.questionNumber === 2) {
+  console.log("BLOCK LINES:");
+  console.log(block.lines);
+  console.log("---------------------------");
+}
   // Determine the correct option: prefer color-derived data (this
   // vendor's PDFs render the correct option's text in green), matched
   // in document order against this block's own option count.
@@ -262,6 +297,17 @@ function parseBlock(
   if (options.length > 0 && colorCursor.index < coloredRuns.length) {
     const slice = coloredRuns.slice(colorCursor.index, colorCursor.index + options.length);
     const allNumbersMatch = slice.length === options.length && slice.every((r, i) => r.number === options[i].number);
+    
+    console.log("Question:", block.questionNumber);
+    console.log("PDF Options:", options.map(o => o.number));
+    console.log("Color Slice:", slice.map(s => ({
+      number: s.number,
+      correct: s.isCorrect,
+      text: s.text
+    })));
+    console.log("Match:", allNumbersMatch);
+    console.log("--------------------------------");
+
     if (allNumbersMatch) {
       colorCursor.index += options.length;
       const correctRun = slice.find((r) => r.isCorrect);

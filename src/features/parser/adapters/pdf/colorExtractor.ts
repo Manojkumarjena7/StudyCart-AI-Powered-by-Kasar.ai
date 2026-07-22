@@ -71,44 +71,91 @@ export async function extractColoredOptionRuns(buffer: Buffer): Promise<ColoredO
 
   const allRuns: ColoredOptionRun[] = [];
 
-  try {
-    for (let pageNum = 1; pageNum <= doc.numPages; pageNum++) {
-      const page = await doc.getPage(pageNum);
-      const opList = await page.getOperatorList();
+try {
+  for (let pageNum = 1; pageNum <= doc.numPages; pageNum++) {
+    const page = await doc.getPage(pageNum);
+    const opList = await page.getOperatorList();
+    console.log("Total operators:", opList.fnArray.length);
 
-      let currentColor: string | null = null;
-      const rawRuns: RawColoredRun[] = [];
+    let currentColor: string | null = null;
+    const rawRuns: RawColoredRun[] = [];
 
-      for (let i = 0; i < opList.fnArray.length; i++) {
-        const opName = opNameByCode.get(opList.fnArray[i]);
-        if (opName === "setFillRGBColor") {
-          const args = opList.argsArray[i] as unknown[];
-          currentColor = typeof args[0] === "string" ? (args[0] as string) : null;
-        }
-        if (opName === "showText") {
-          const glyphs = opList.argsArray[i][0] as { unicode?: string }[];
-          const text = glyphs.map((g) => g.unicode ?? "").join("");
-          if ((currentColor === CORRECT_COLOR || currentColor === INCORRECT_COLOR) && text.trim()) {
-            rawRuns.push({ color: currentColor, text });
-          }
-        }
-      }
+    for (let i = 0; i < opList.fnArray.length; i++) {
+    const opName = opNameByCode.get(opList.fnArray[i]);
 
-      for (const run of mergeFragments(rawRuns)) {
-        const match = run.text.match(/^\s*([1-4])[.)]\s*([\s\S]*)$/);
-        if (!match) continue;
+    if (
+      opName === "showText" ||
+      opName === "showSpacedText" ||
+      opName === "nextLineShowText" ||
+      opName === "nextLineSetSpacingShowText"
+    ) {
+      console.log("TEXT OPERATOR:", opName);
+    }
+
+  if (opName?.toLowerCase().includes("color")) {
+  console.log("COLOR OP:", opName, opList.argsArray[i]);
+
+  const args = opList.argsArray[i];
+
+  console.log("RAW RGB ARGS:", args);
+
+  if (
+    Array.isArray(args) &&
+    args.length > 0 &&
+    typeof args[0] === "string"
+  ) {
+    currentColor = args[0].toLowerCase();
+  } else {
+    currentColor = null;
+  }
+
+  console.log("COLOR =", currentColor);
+}
+
+  if (opName === "showText") {
+    console.log(
+      "SHOWTEXT RAW:",
+      JSON.stringify(opList.argsArray[i], null, 2)
+    );
+
+    const glyphs = opList.argsArray[i][0] as { unicode?: string }[];
+    const text = glyphs.map((g) => g.unicode ?? "").join("");
+
+    console.log("TEXT:", JSON.stringify(text));
+    console.log("COLOR:", currentColor);
+
+    if (
+      (currentColor === CORRECT_COLOR ||
+        currentColor === INCORRECT_COLOR) &&
+      text.trim()
+    ) {
+      rawRuns.push({
+        color: currentColor,
+        text,
+      });
+    }
+  }
+}
+
+// Merge ONLY AFTER scanning the entire page
+for (const run of mergeFragments(rawRuns)) {
+  const match = run.text.match(/^\s*([1-4])[.)]\s*([\s\S]*)$/);
+
+  if (!match) continue;
+
         allRuns.push({
           number: Number(match[1]),
           text: match[2].trim(),
           isCorrect: run.color === CORRECT_COLOR,
         });
-      }
     }
-  } catch {
-    // Partial extraction failure (e.g. one malformed page) — return
-    // whatever was successfully gathered rather than failing the whole parse.
-    return allRuns;
-  }
 
+  } // end page loop
+
+} catch {
+  // Partial extraction failure (e.g. one malformed page)
   return allRuns;
+}
+
+return allRuns;
 }
