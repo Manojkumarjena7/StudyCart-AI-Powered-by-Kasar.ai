@@ -8,6 +8,7 @@ import { mainNav } from "@/config/navigation";
 import { brandConfig } from "@/config/brand";
 import { Button } from "@/components/shared/ui/button";
 import { cn } from "@/lib/utils/cn";
+import { LayoutGroup, motion } from "framer-motion";
 
 export function Navbar() {
   const pathname = usePathname();
@@ -25,25 +26,85 @@ export function Navbar() {
           </span>
         </Link>
 
-        <nav className="hidden items-center gap-1 lg:flex">
-          {mainNav.map((item) => {
-            const active = pathname === item.href;
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={cn(
-                  "focus-ring rounded-lg px-3.5 py-2 text-sm font-medium transition-colors",
-                  active
-                    ? "text-brand-cyan-light"
-                    : "text-text-secondary hover:text-text-primary"
-                )}
-              >
-                {item.label}
-              </Link>
-            );
-          })}
-        </nav>
+        <nav className="hidden items-center gap-1 rounded-2xl border border-white/5 bg-white/5 p-1 backdrop-blur-md lg:flex">
+  {mainNav.map((item) => {
+    const active = pathname === item.href;
+
+    return (
+      <Link
+        key={item.href}
+        href={item.href}
+        className="
+        group
+        relative
+        rounded-xl
+        px-4
+        py-2
+        text-sm
+        font-medium
+        transition-all
+        duration-300
+        hover:-translate-y-0.5
+        hover:-translate-y-0.5
+        hover:shadow-[0_0_18px_rgba(34,211,238,0.15)]
+        "
+      >
+        {active && (
+          <motion.div
+            layoutId="navbar-pill"
+            transition={{
+              type: "spring",
+              stiffness: 450,
+              damping: 32,
+            }}
+            className="
+              absolute
+              inset-0
+              -z-10
+              rounded-xl
+              border
+              border-cyan-400/20
+              bg-gradient-to-r
+              from-cyan-500/10
+              via-cyan-400/20
+              to-cyan-500/10
+              backdrop-blur-md
+              shadow-[0_0_25px_rgba(34,211,238,0.18)]
+            "
+          />
+        )}
+
+        <span
+          className={cn(
+            "relative z-10 transition-colors duration-300",
+            active
+              ? "text-brand-cyan-light"
+              : "text-text-secondary hover:text-brand-cyan-light"
+          )}
+        >
+          {item.label}
+        </span>
+        <span
+          className="
+            pointer-events-none
+            absolute
+            inset-0
+            rounded-xl
+            bg-gradient-to-r
+            from-cyan-400/0
+            via-cyan-400/10
+            to-cyan-400/0
+            opacity-0
+            blur-xl
+            transition-opacity
+            duration-300
+            group-hover:opacity-100
+        "
+        />
+      </Link>
+    );
+  })}
+</nav>
 
         <div className="hidden items-center gap-3 lg:flex">
           <Link

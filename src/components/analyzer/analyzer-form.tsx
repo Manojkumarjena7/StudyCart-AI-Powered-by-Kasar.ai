@@ -86,11 +86,11 @@ export function AnalyzerForm() {
       {processing && <ProcessingOverlay />}
       <Card className="mx-auto max-w-2xl">
         <CardHeader>
-          <CardTitle>Universal Answer Key Analyzer</CardTitle>
+          <CardTitle>AI Result Analyzer</CardTitle>
           <CardDescription>
-            Paste your response sheet link or upload the PDF — no manual data entry required.
+            Analyze your exam performance using AI. Paste your response sheet URL or upload your response sheet PDF to generate detailed insights instantly.
           </CardDescription>
-        </CardHeader>
+        </CardHeader>n
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-6" noValidate>
             <div>

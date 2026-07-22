@@ -7,6 +7,7 @@ import { BrandStory } from "@/components/home/brand-story";
 import { EcosystemPreview } from "@/components/home/ecosystem-preview";
 import { AboutPreview } from "@/components/home/about-preview";
 import { trendingExamsRepository } from "@/lib/supabase/repositories/trendingExams.repository";
+import { FutureFeatures } from "@/components/home/future-features";
 
 export default async function HomePage() {
   const trendingExam = await trendingExamsRepository.getActive();

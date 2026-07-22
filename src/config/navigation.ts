@@ -9,7 +9,7 @@ export interface NavItem {
 // Adding a future module = adding one line here. No layout restructuring needed.
 export const mainNav: NavItem[] = [
   { label: "Home", href: "/" },
-  { label: brandConfig.productShortName, href: "/analyzer" },
+  { label: "AI Result Analyzer", href: "/analyzer" },
   { label: "About", href: "/about" },
   { label: "Jobs", href: "/jobs", comingSoon: true },
   { label: "Books", href: "/books", comingSoon: true },
