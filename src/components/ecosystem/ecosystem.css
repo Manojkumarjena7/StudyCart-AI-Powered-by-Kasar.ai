@@ -1,0 +1,66 @@
+[data-ecosystem-theme="dark"] {
+  --eco-bg: #05070d;
+  --eco-bg-elevated: #0b0f1a;
+  --eco-card: #0f1420;
+  --eco-card-hover: #131a29;
+  --eco-border: rgba(148, 163, 184, 0.14);
+  --eco-border-strong: rgba(148, 163, 184, 0.28);
+  --eco-text-primary: #f8fafc;
+  --eco-text-secondary: #94a3b8;
+  --eco-glow-1: rgba(37, 99, 235, 0.35);
+  --eco-glow-2: rgba(139, 92, 246, 0.3);
+  --eco-glow-3: rgba(6, 182, 212, 0.25);
+  color-scheme: dark;
+}
+
+[data-ecosystem-theme="light"] {
+  --eco-bg: #f8fafc;
+  --eco-bg-elevated: #ffffff;
+  --eco-card: #ffffff;
+  --eco-card-hover: #f1f5f9;
+  --eco-border: rgba(15, 23, 42, 0.08);
+  --eco-border-strong: rgba(15, 23, 42, 0.14);
+  --eco-text-primary: #0f172a;
+  --eco-text-secondary: #64748b;
+  --eco-glow-1: rgba(37, 99, 235, 0.16);
+  --eco-glow-2: rgba(139, 92, 246, 0.14);
+  --eco-glow-3: rgba(6, 182, 212, 0.12);
+  color-scheme: light;
+}
+
+.ecosystem-root {
+  background: var(--eco-bg);
+  color: var(--eco-text-primary);
+  transition: background-color 0.35s ease, color 0.35s ease;
+}
+
+.eco-card {
+  background: var(--eco-card);
+  border: 1px solid var(--eco-border);
+  transition: background-color 0.3s ease, border-color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.eco-card:hover {
+  background: var(--eco-card-hover);
+  border-color: var(--eco-border-strong);
+}
+
+.eco-glass {
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+.eco-text-secondary {
+  color: var(--eco-text-secondary);
+}
+
+.eco-border {
+  border-color: var(--eco-border);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ecosystem-root * {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
