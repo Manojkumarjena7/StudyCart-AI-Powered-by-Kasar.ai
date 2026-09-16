@@ -1,0 +1,9 @@
+KasarTech.ai — selected visual system
+Primary: #0E7A5F
+Accent: #20D39A
+Dark: #071A17
+Text: #0F172A
+Muted: #64748B
+Background: #F8FAF9
+Typeface: Inter
+Positioning: AI Interview Support

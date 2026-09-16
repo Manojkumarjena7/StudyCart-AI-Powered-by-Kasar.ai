@@ -101,7 +101,7 @@ export function Hero() {
         className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-[560px] opacity-60"
         style={{
           background:
-            "radial-gradient(60% 60% at 50% 0%, rgba(37,99,235,0.16) 0%, rgba(6,182,212,0.06) 45%, transparent 80%)",
+            "radial-gradient(60% 60% at 50% 0%, rgba(14,122,95,0.16) 0%, rgba(32,211,154,0.07) 45%, transparent 80%)",
         }}
       />
 

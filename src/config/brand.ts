@@ -1,4 +1,14 @@
 export const brandConfig = {
+  // Site-wide primary brand identity (navbar, footer, browser tab, root metadata).
+  // Kept separate from productName/productShortName below, which remain "StudyCart"
+  // — the specific product name still used by the analyzer's generated PDF reports
+  // (src/features/reports/reportGenerator.ts), the ranking disclaimer, and the About
+  // page's origin story. Renaming those would silently change protected business-logic
+  // output and make the About page's own "platform vs. first product" narrative
+  // incoherent. See docs/DESIGN-SYSTEM.md §Brand identity.
+  siteName: "KasarTech.ai",
+  sitePositioning: "AI Interview Support",
+
   productName: "StudyCart",
   productShortName: "StudyCart",
   productIdentity: "StudyCart AI Interview Support",

@@ -13,17 +13,22 @@ export function ResumeHero() {
         className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-[480px] opacity-60"
         style={{
           background:
-            "radial-gradient(60% 60% at 50% 0%, rgba(37,99,235,0.14) 0%, rgba(6,182,212,0.05) 45%, transparent 80%)",
+            "radial-gradient(60% 60% at 50% 0%, rgba(14,122,95,0.14) 0%, rgba(32,211,154,0.06) 45%, transparent 80%)",
         }}
       />
       <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 sm:py-20 lg:px-8">
         <div className="grid items-center gap-10 lg:grid-cols-2 lg:gap-16">
           <div>
-            <Badge variant="neutral" className="mb-4">
-              Resume
-            </Badge>
-            <h1 className="text-balance text-4xl font-semibold leading-[1.1] tracking-tight text-text-primary sm:text-5xl">
-              Build a Resume That Gets You Hired
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
+              <Badge variant="neutral">Resume</Badge>
+              <p className="text-xs font-medium text-text-secondary">
+                AI-Powered · ATS Friendly · IT Career Focus
+              </p>
+            </div>
+            <h1 className="mt-4 text-balance text-4xl font-semibold leading-[1.1] tracking-tight text-text-primary sm:text-5xl">
+              Build a Resume
+              <br />
+              That <span className="text-brand-blue">Gets You Hired.</span>
             </h1>
             <p className="mt-5 max-w-lg text-balance text-base text-text-secondary sm:text-lg">
               Explore professional IT resume examples, check your own resume, and learn

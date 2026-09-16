@@ -1,9 +1,10 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useState } from "react";
 import { usePathname } from "next/navigation";
-import { Menu, X, Send, GraduationCap } from "lucide-react";
+import { Menu, X, Send } from "lucide-react";
 import { platformPillars } from "@/config/platform";
 import { footerLegalNav } from "@/config/navigation";
 import { brandConfig } from "@/config/brand";
@@ -58,16 +59,21 @@ export function Navbar() {
     <header className="sticky top-0 z-50 border-b border-border-subtle bg-bg-primary/85 backdrop-blur-md">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
         <Link href="/" className="flex items-center gap-2 focus-ring rounded-md">
-          <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-brand-blue to-brand-cyan-light">
-            <GraduationCap className="h-4.5 w-4.5 text-white" />
-          </span>
-          <span className="text-sm font-semibold text-text-primary sm:text-base">
-            {brandConfig.productShortName}
+          <Image
+            src="/brand/logo/kasartech-symbol.svg"
+            alt={brandConfig.siteName}
+            width={28}
+            height={26}
+            className="h-8 w-auto"
+            priority
+          />
+          <span className="hidden text-sm font-semibold text-text-primary sm:inline sm:text-base">
+            {brandConfig.siteName}
           </span>
         </Link>
 
         <LayoutGroup>
-          <nav className="hidden items-center gap-1 rounded-2xl border border-overlay-soft bg-overlay-soft p-1 backdrop-blur-md lg:flex">
+          <nav className="hidden items-center gap-1 lg:flex">
             {navItems.map((item) => {
               const active = !item.external && pathname === item.href;
 
@@ -75,26 +81,26 @@ export function Navbar() {
                 <>
                   {active && (
                     <motion.div
-                      layoutId="navbar-pill"
-                      transition={{ type: "spring", stiffness: 450, damping: 32 }}
-                      className="absolute inset-0 -z-10 rounded-xl border border-cyan-400/20 bg-gradient-to-r from-cyan-500/10 via-cyan-400/20 to-cyan-500/10 backdrop-blur-md shadow-[0_0_25px_rgba(34,211,238,0.18)]"
+                      layoutId="navbar-active-chip"
+                      transition={{ type: "spring", stiffness: 500, damping: 35 }}
+                      className="absolute inset-0 -z-10 rounded-lg bg-brand-blue/10"
                     />
                   )}
                   <PillarIcon
                     name={item.icon}
                     className={cn(
-                      "relative z-10 h-3.5 w-3.5 transition-colors duration-300",
+                      "relative z-10 h-3.5 w-3.5 transition-colors duration-200",
                       active
-                        ? "text-brand-cyan-light"
-                        : "text-text-secondary group-hover:text-brand-cyan-light"
+                        ? "text-brand-blue"
+                        : "text-text-secondary group-hover:text-text-primary"
                     )}
                   />
                   <span
                     className={cn(
-                      "relative z-10 transition-colors duration-300",
+                      "relative z-10 transition-colors duration-200",
                       active
-                        ? "text-brand-cyan-light"
-                        : "text-text-secondary group-hover:text-brand-cyan-light"
+                        ? "font-semibold text-brand-blue"
+                        : "text-text-secondary group-hover:text-text-primary"
                     )}
                   >
                     {item.label}
@@ -108,10 +114,8 @@ export function Navbar() {
               );
 
               const className = cn(
-                "group relative flex items-center gap-1.5 rounded-xl px-3.5 py-2 text-sm font-medium transition-all duration-300",
-                item.disabled
-                  ? "cursor-not-allowed opacity-50"
-                  : "hover:-translate-y-0.5 hover:shadow-[0_0_18px_rgba(34,211,238,0.15)]"
+                "group relative flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium transition-colors duration-200",
+                item.disabled && "cursor-not-allowed opacity-50"
               );
 
               if (item.disabled) {
@@ -137,15 +141,16 @@ export function Navbar() {
           </nav>
         </LayoutGroup>
 
-        <div className="hidden items-center gap-3 lg:flex">
+        <div className="hidden items-center gap-2 lg:flex">
           <Link
             href={brandConfig.socialLinks.telegram}
             target="_blank"
             rel="noreferrer"
-            className="focus-ring flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm text-text-secondary transition-colors hover:text-brand-cyan-light"
+            aria-label="StudyCart on Telegram"
+            title="Telegram"
+            className="focus-ring flex h-9 w-9 items-center justify-center rounded-full text-text-secondary transition-colors hover:bg-overlay-soft hover:text-text-primary"
           >
             <Send className="h-4 w-4" />
-            Telegram
           </Link>
           <ThemeToggle />
           <Link href="/resume">

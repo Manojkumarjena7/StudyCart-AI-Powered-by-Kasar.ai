@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { GraduationCap } from "lucide-react";
+import Image from "next/image";
 import { footerCommunityLinks, footerLegalNav } from "@/config/navigation";
 import { platformPillars } from "@/config/platform";
 import { brandConfig } from "@/config/brand";
@@ -11,17 +11,19 @@ export function Footer() {
         <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-4">
           <div>
             <div className="flex items-center gap-2">
-              <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-brand-blue to-brand-cyan-light">
-                <GraduationCap className="h-4.5 w-4.5 text-white" />
-              </span>
-              <span className="font-semibold text-text-primary">{brandConfig.productShortName}</span>
+              <Image
+                src="/brand/logo/kasartech-symbol.svg"
+                alt={brandConfig.siteName}
+                width={28}
+                height={26}
+                className="h-8 w-auto"
+              />
+              <span className="font-semibold text-text-primary">{brandConfig.siteName}</span>
             </div>
             <p className="mt-3 max-w-xs text-sm text-text-secondary">
               {brandConfig.tagline}
             </p>
-            <p className="mt-2 text-xs text-text-secondary">
-              {brandConfig.endorsementText} · {brandConfig.location.display}
-            </p>
+            <p className="mt-2 text-xs text-text-secondary">{brandConfig.location.display}</p>
           </div>
 
           <div>
@@ -86,7 +88,7 @@ export function Footer() {
         </div>
 
         <div className="mt-12 border-t border-border-subtle pt-6 text-xs text-text-secondary">
-          © {brandConfig.copyrightYear} {brandConfig.productShortName}. All rights reserved.
+          © {brandConfig.copyrightYear} {brandConfig.siteName}. All rights reserved.
         </div>
       </div>
     </footer>

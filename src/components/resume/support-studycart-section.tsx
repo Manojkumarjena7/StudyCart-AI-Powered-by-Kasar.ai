@@ -25,7 +25,7 @@ export function SupportStudyCartSection() {
             href={paytmUrl}
             target="_blank"
             rel="noreferrer"
-            className="focus-ring flex shrink-0 items-center gap-1.5 rounded-lg bg-brand-blue px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-blue-600"
+            className="focus-ring flex shrink-0 items-center gap-1.5 rounded-lg bg-brand-blue px-4 py-2.5 text-sm font-medium text-white transition-opacity hover:opacity-90"
           >
             Support via Paytm
             <ExternalLink className="h-3.5 w-3.5" />

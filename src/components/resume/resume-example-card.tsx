@@ -29,7 +29,7 @@ export function ResumeExampleCard({ example, onView }: ResumeExampleCardProps) {
           <button
             type="button"
             onClick={() => onView(example)}
-            className="focus-ring flex flex-1 items-center justify-center gap-1.5 rounded-lg bg-brand-blue px-3 py-2 text-xs font-medium text-white transition-colors hover:bg-blue-600"
+            className="focus-ring flex flex-1 items-center justify-center gap-1.5 rounded-lg bg-brand-blue px-3 py-2 text-xs font-medium text-white transition-opacity hover:opacity-90"
           >
             <Eye className="h-3.5 w-3.5" />
             View

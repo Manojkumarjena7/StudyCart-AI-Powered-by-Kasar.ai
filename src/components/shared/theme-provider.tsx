@@ -2,32 +2,32 @@
 
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
 
-export type SiteTheme = "dark" | "light";
+export type SiteTheme = "green" | "day" | "night";
 
 const STORAGE_KEY = "studycart-theme";
+const VALID_THEMES: readonly SiteTheme[] = ["green", "day", "night"];
 
 interface ThemeContextValue {
   theme: SiteTheme;
-  toggleTheme: () => void;
+  setTheme: (theme: SiteTheme) => void;
 }
 
 const ThemeContext = createContext<ThemeContextValue | null>(null);
 
 function applyTheme(theme: SiteTheme) {
-  // Dark has no attribute value (matches the pre-existing site-wide default in
-  // globals.css), so only "light" needs to be reflected on the root element.
-  if (theme === "light") {
-    document.documentElement.setAttribute("data-theme", "light");
-  } else {
+  // "green" has no attribute value (it's the default, matching globals.css :root),
+  // so only "day"/"night" need to be reflected on the root element.
+  if (theme === "green") {
     document.documentElement.removeAttribute("data-theme");
+  } else {
+    document.documentElement.setAttribute("data-theme", theme);
   }
 }
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
-  // Dark by default — matches current production behavior exactly until a saved
-  // preference says otherwise, so there's no visual regression for existing pages
-  // that were only ever styled against the dark palette (see docs/DESIGN-SYSTEM.md).
-  const [theme, setTheme] = useState<SiteTheme>("dark");
+  // KasarTech Green by default — the primary brand experience every first-time
+  // visitor sees, per the approved branding direction. See docs/DESIGN-SYSTEM.md.
+  const [theme, setThemeState] = useState<SiteTheme>("green");
 
   // Reading a persisted preference after mount avoids an SSR/client hydration
   // mismatch (localStorage doesn't exist on the server). The inline script in
@@ -36,29 +36,26 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     try {
       const saved = window.localStorage.getItem(STORAGE_KEY);
-      if (saved === "light" || saved === "dark") {
+      if (saved && (VALID_THEMES as string[]).includes(saved)) {
         // eslint-disable-next-line react-hooks/set-state-in-effect
-        setTheme(saved);
+        setThemeState(saved as SiteTheme);
       }
     } catch {
       // localStorage unavailable (e.g. privacy mode) — silently keep the default.
     }
   }, []);
 
-  function toggleTheme() {
-    setTheme((prev) => {
-      const next = prev === "dark" ? "light" : "dark";
-      applyTheme(next);
-      try {
-        window.localStorage.setItem(STORAGE_KEY, next);
-      } catch {
-        // ignore
-      }
-      return next;
-    });
+  function setTheme(next: SiteTheme) {
+    setThemeState(next);
+    applyTheme(next);
+    try {
+      window.localStorage.setItem(STORAGE_KEY, next);
+    } catch {
+      // ignore
+    }
   }
 
-  return <ThemeContext.Provider value={{ theme, toggleTheme }}>{children}</ThemeContext.Provider>;
+  return <ThemeContext.Provider value={{ theme, setTheme }}>{children}</ThemeContext.Provider>;
 }
 
 export function useTheme(): ThemeContextValue {
@@ -70,6 +67,9 @@ export function useTheme(): ThemeContextValue {
 }
 
 // Inline script source, applied in layout.tsx <head> before hydration so a saved
-// "light" preference doesn't flash dark on first paint. Kept as a plain string (not a
-// component) because it must run as a blocking, pre-hydration script.
-export const themeInitScript = `(function(){try{var t=localStorage.getItem("${STORAGE_KEY}");if(t==="light"){document.documentElement.setAttribute("data-theme","light");}}catch(e){}})();`;
+// "day"/"night" preference doesn't flash the KasarTech Green default on first paint.
+// Kept as a plain string (not a component) because it must run as a blocking,
+// pre-hydration script. Anything other than a recognized theme value (including
+// legacy "light"/"dark" from before the three-mode system) falls back to the
+// KasarTech Green default, matching the first-time-visitor requirement.
+export const themeInitScript = `(function(){try{var t=localStorage.getItem("${STORAGE_KEY}");if(t==="day"||t==="night"){document.documentElement.setAttribute("data-theme",t);}}catch(e){}})();`;

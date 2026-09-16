@@ -1,5 +1,146 @@
 # Changelog
 
+## KasarTech.ai visual theme + Resume UI (UI/design phase only)
+
+**Scope:** Approved KasarTech.ai visual direction — brand asset consolidation, a
+three-mode theme system (Green default, Day, Night), navbar simplification, and Resume
+hero/mockup polish. No architecture, business logic, or route changes. See
+`docs/DESIGN-SYSTEM.md` §Theme system and §Brand assets for full rationale.
+
+### Added
+- `src/components/shared/theme-toggle.tsx` rewritten as a 3-option accessible
+  dropdown (was a 2-state sun/moon button).
+- `metadata.openGraph` (title/description/`og-image.png`) in `src/app/layout.tsx` —
+  new capability; Package 1 had no OG image to wire.
+- `public/brand/social/og-image.png`, `public/brand/logo/kasartech-logo-light.svg` —
+  new assets from the Selected Brand Pack with no Package 1 equivalent.
+
+### Changed
+- **Brand assets consolidated**: `public/brand/` now holds only
+  `KasarTech-Selected-Brand-Pack.zip`'s assets (the approved/latest direction) —
+  replaced Package 1's files in place. `KasarTech-Brand-Assets.zip` (Package 1)
+  remains untouched at the project root as a historical/safety copy but is no longer
+  referenced by any code. `src/app/favicon.ico` and `src/app/apple-icon.png`
+  replaced with Package 2's versions; `metadata.icons.icon` now includes 192×192 and
+  512×512 sizes alongside 16/32/48, using the pack's renamed files
+  (`favicon-16.png`, not `favicon-16x16.png`).
+- `src/app/globals.css` — full three-theme token rewrite (`:root` = KasarTech Green
+  default, `[data-theme="day"]`, `[data-theme="night"]`). `html`'s base
+  `color-scheme` flipped from `dark` to `light` (Green/Day are light-family; only
+  Night sets `color-scheme: dark`).
+- `src/components/shared/theme-provider.tsx` — `SiteTheme` type widened from
+  `"dark" | "light"` to `"green" | "day" | "night"`; API changed from
+  `{ theme, toggleTheme }` to `{ theme, setTheme }` (a 3-way choice isn't a toggle).
+  Confirmed via search that no other file consumed the old `toggleTheme` API — the
+  ecosystem showcase's `src/components/ecosystem/ThemeToggle.tsx` is a separate,
+  independent theme system (`--eco-*` tokens) and was not touched.
+- `src/components/layout/navbar.tsx` — removed the oversized rounded pill container
+  around the whole nav group; each item now gets its own small active-state
+  background chip (still an animated `framer-motion` shared-element transition, just
+  scoped to one item instead of a floating capsule with a large glow shadow). The
+  desktop Telegram link is now icon-only (was icon + text) to keep the nav visually
+  light, per the approved target layout — link itself unchanged.
+- `src/components/shared/ui/button.tsx` — the (unused-in-practice, but exported)
+  `primary` variant's hardcoded `hover:bg-blue-600` and blue shadow replaced with
+  token-safe values; was previously dark-navy text on a blue background, which
+  would have become illegible dark-on-dark once `--color-blue` turned green.
+- `src/components/resume/resume-example-card.tsx`,
+  `src/components/resume/support-studycart-section.tsx` — same hardcoded
+  `hover:bg-blue-600` fix (→ `hover:opacity-90`), for the same reason.
+- `src/components/resume/resume-hero.tsx` (Resume hero) and `src/components/home/hero.tsx`
+  (homepage hero) — the purely decorative ambient background glow (a radial-gradient
+  in an inline `style`, not theme-token-driven) recolored from hardcoded blue/cyan to
+  the KasarTech green family, so it doesn't clash with everything else that already
+  re-themes automatically via tokens. No layout/structure change.
+- `src/components/resume/resume-hero.tsx` — added an "AI-Powered · ATS Friendly · IT
+  Career Focus" eyebrow line next to the existing "Resume" badge; headline split
+  into two lines with the second half in the brand accent color, matching the
+  approved reference direction (not copied literally).
+- `src/components/resume/resume-hero-mockup.tsx` — added a small Projects line and
+  icon-annotated contact row (Mail/Phone/MapPin) so the preview reads as a complete
+  resume document rather than a partial one; added a thin brand-gradient top accent
+  bar. Sample data remains clearly fictional. The four supporting badges (Clean
+  Structure/ATS Friendly/Includes Projects/Professional Format) were already exactly
+  what the brief asked for — left unchanged.
+
+### Explicitly not changed (by design, this phase)
+- `src/components/resume/resume-guide-section.tsx` ("How to Improve") — already
+  implemented as the exact 01–05 numbered editorial journey the brief asks for
+  (responsive horizontal-on-desktop/vertical-on-mobile, no large cards). No changes
+  needed.
+- `src/components/resume/resume-examples-carousel.tsx` /
+  `resume-example-card.tsx` structure, `src/components/footer.tsx` branding — already
+  matched the brief from the prior branding phase; only the one color-token fix
+  above was needed in the card.
+- Resume example count stayed at 3 (not expanded to 4–5) — generating new example
+  PDFs is content/data work via `scripts/generate-resume-examples.mjs`, not a visual
+  theme change, and this phase's brief was explicit about being UI/design only. The
+  carousel already has no hardcoded limit and displays additional examples the
+  moment they exist in `src/config/resume-examples.ts`.
+- `src/features/analyzer|parser|scoring|ranking|reports`, `src/lib/supabase`,
+  Interview Management integration, all routes — untouched. `/analyzer` verified
+  functional and readable in all three themes.
+- Homepage structure/sections, `/about` narrative, per-page `<title>` tags outside
+  root layout — unchanged, per the prior phase's documented rationale (still
+  read `brandConfig.productName` = "StudyCart") and this phase's own "no homepage
+  redesign" instruction.
+
+## Branding — KasarTech.ai site identity (full rebrand, branding-only)
+
+**Scope:** Site-wide primary brand identity change to KasarTech.ai / "AI Interview
+Support", per the supplied `KasarTech-Brand-Assets.zip`. Branding only — no homepage,
+Resume page, or business-logic changes. See `docs/DESIGN-SYSTEM.md` §Brand identity for
+the full rationale, including which fields/pages were deliberately left unchanged.
+
+### Added
+- `public/brand/` — production brand assets copied unmodified from the supplied pack
+  (`logo/`, `icons/`, plus the pack's own `README.md`/`brand-assets.json`/`brand-colors.txt`).
+- `src/app/favicon.ico`, `src/app/apple-icon.png` — replaced with the supplied
+  KasarTech assets via Next.js's App Router file-convention icons.
+- `src/components/shared/kasartech-symbol.tsx` — new component wrapping the KasarTech
+  symbol SVG in the same `{ className }` shape as a `lucide-react` icon component, so it
+  drops into `EcosystemProduct`/`kasarTechCompany`'s existing `icon` slot without any
+  type hacks.
+- `brandConfig.siteName` ("KasarTech.ai") and `brandConfig.sitePositioning` ("AI
+  Interview Support") in `src/config/brand.ts` — the new site-wide identity fields.
+- `metadata.icons` (16/32/48px favicon PNGs) and `viewport.themeColor` (`#0E7A5F`) in
+  `src/app/layout.tsx`.
+- `images.dangerouslyAllowSVG` + a restrictive `contentSecurityPolicy` in
+  `next.config.ts` — required for `next/image` to serve our own local, trusted brand
+  SVGs (blocked by default).
+
+### Changed
+- `src/app/layout.tsx` — root `<title>` changed from "StudyCart — Powered by Kasar.ai"
+  to "KasarTech.ai — AI Interview Support".
+- `src/components/layout/navbar.tsx`, `footer.tsx` — replaced the `GraduationCap`
+  Lucide icon + gradient-box mark with the real KasarTech symbol SVG (`next/image`) and
+  live `{brandConfig.siteName}` text (Inter, not the flattened Arial logo image). Navbar
+  text hides below the `sm` breakpoint (symbol-only on the smallest phone widths, per
+  the branding brief's mobile requirement).
+- `src/components/layout/footer.tsx` — footer copyright line now reads
+  "© {year} KasarTech.ai"; dropped the "Powered by Kasar.ai ·" prefix from the
+  location line since it read as self-referential once KasarTech.ai became the
+  displayed brand directly above it.
+- `src/config/ecosystem/products.ts` — `kasarTechCompany.icon` changed from the
+  generic `Code2` Lucide placeholder to the real `KasarTechSymbol`; its card accent
+  colors changed from generic blue/indigo to KasarTech's actual brand green
+  (`#0E7A5F` → `#20D39A`), scoped to that one card only.
+
+### Explicitly not changed (by design, this phase)
+- `brandConfig.productName`/`productShortName` ("StudyCart") — still used by
+  `src/features/reports/reportGenerator.ts` (PDF report branding), the ranking
+  disclaimer (`src/config/site.ts`), and the About page's origin-story copy. See
+  `docs/DESIGN-SYSTEM.md` §Brand identity for why.
+- Per-page `<title>` tags for `/resume`, `/analyzer`, `/about`, and all homepage/Resume
+  page body copy — branding-only phase, not a content or homepage/Resume redesign.
+- `src/features/analyzer|parser|scoring|ranking|reports`, `src/lib/supabase`,
+  Interview Management integration — untouched, verified via `git diff` and a manual
+  pass through `/analyzer`.
+- PWA manifest — the pack includes 192/512px icons for one, but no
+  `manifest.json`/`site.webmanifest` exists in this codebase yet; adding one would be
+  new app functionality, not branding. The PNGs are staged in `public/brand/icons/` for
+  a future PWA pass.
+
 ## Phase 3 (MVP scope) — Resume module: examples, PDF viewer, analyzer foundation
 
 **Scope:** `docs/ROADMAP.md` Phase 3, narrowed to the Resume MVP brief. No real

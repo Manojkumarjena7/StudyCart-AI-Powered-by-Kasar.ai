@@ -1,36 +1,44 @@
 @import "tailwindcss";
 
 /*
- * Theme tokens — see docs/DESIGN-SYSTEM.md.
- * Dark is the default (no attribute needed) to match existing production pages that
- * were only ever styled against the dark palette. Setting data-theme="light" on <html>
- * (via ThemeProvider / theme-toggle) switches to the light palette.
+ * Theme tokens — see docs/DESIGN-SYSTEM.md §Brand identity / §Theme system.
+ * Three modes: KasarTech Green (default, no attribute needed), Day, Night.
+ * Setting data-theme="day" or data-theme="night" on <html> (via ThemeProvider /
+ * theme-toggle) switches palettes. Component code should never reference these
+ * hex values directly — only the semantic Tailwind classes below (bg-bg-primary,
+ * text-text-secondary, bg-brand-blue, etc.) so every theme stays consistent.
  */
-:root {
-  --color-bg-primary: #07111f;
-  --color-bg-secondary: #0b1728;
-  --color-bg-card: #101e31;
-  --color-blue: #2563eb;
-  --color-cyan: #06b6d4;
-  --color-cyan-light: #22d3ee;
-  --color-text-primary: #f8fafc;
-  --color-text-secondary: #94a3b8;
-  --color-success: #22c55e;
-  --color-error: #ef4444;
-  --color-warning: #f59e0b;
-  --color-border: rgba(148, 163, 184, 0.15);
-  --color-overlay-soft: rgba(255, 255, 255, 0.05);
-  --color-overlay-strong: rgba(255, 255, 255, 0.1);
-  --shadow-card: 0 0 0 1px rgba(148, 163, 184, 0.08), 0 20px 48px rgba(2, 6, 23, 0.45);
-}
 
-:root[data-theme="light"] {
-  --color-bg-primary: #f8fafc;
+/* KasarTech Green — the default, primary brand experience. Off-white surface +
+   dark navy type + green CTA, not an all-green page. */
+:root {
+  --color-bg-primary: #f8faf9;
   --color-bg-secondary: #ffffff;
   --color-bg-card: #ffffff;
-  --color-blue: #2563eb;
-  --color-cyan: #0891b2;
-  --color-cyan-light: #0e7490;
+  --color-blue: #0e7a5f;
+  --color-cyan: #20d39a;
+  --color-cyan-light: #0e9f78;
+  --color-text-primary: #0f172a;
+  --color-text-secondary: #64748b;
+  --color-success: #16a34a;
+  --color-error: #dc2626;
+  --color-warning: #b45309;
+  --color-border: rgba(14, 122, 95, 0.14);
+  --color-overlay-soft: rgba(14, 122, 95, 0.06);
+  --color-overlay-strong: rgba(14, 122, 95, 0.1);
+  --shadow-card: 0 1px 2px rgba(15, 23, 42, 0.04), 0 20px 44px rgba(14, 122, 95, 0.12);
+}
+
+/* Day — clean, neutral, professional light mode. Restrained green accents only
+   for CTAs/links; borders/overlays are neutral gray, not green-tinted, which is
+   what actually differentiates it from KasarTech Green rather than duplicating it. */
+:root[data-theme="day"] {
+  --color-bg-primary: #ffffff;
+  --color-bg-secondary: #f8fafc;
+  --color-bg-card: #ffffff;
+  --color-blue: #0e7a5f;
+  --color-cyan: #20d39a;
+  --color-cyan-light: #0e9f78;
   --color-text-primary: #0f172a;
   --color-text-secondary: #475569;
   --color-success: #16a34a;
@@ -40,6 +48,28 @@
   --color-overlay-soft: rgba(15, 23, 42, 0.04);
   --color-overlay-strong: rgba(15, 23, 42, 0.08);
   --shadow-card: 0 1px 2px rgba(15, 23, 42, 0.04), 0 16px 40px rgba(15, 23, 42, 0.08);
+}
+
+/* Night — an intentionally-designed dark green-black mode, not a plain inversion
+   of Day. Background/borders/overlays carry a deliberate green tint throughout;
+   the brighter accent green (not the darker primary) leads on CTAs for contrast
+   against the near-black background. */
+:root[data-theme="night"] {
+  --color-bg-primary: #071a17;
+  --color-bg-secondary: #0a211d;
+  --color-bg-card: #0f2823;
+  --color-blue: #12946e;
+  --color-cyan: #20d39a;
+  --color-cyan-light: #55e6ba;
+  --color-text-primary: #f8fafc;
+  --color-text-secondary: #9fb8b0;
+  --color-success: #4ade80;
+  --color-error: #f87171;
+  --color-warning: #fbbf24;
+  --color-border: rgba(148, 197, 184, 0.16);
+  --color-overlay-soft: rgba(148, 197, 184, 0.07);
+  --color-overlay-strong: rgba(148, 197, 184, 0.12);
+  --shadow-card: 0 0 0 1px rgba(148, 197, 184, 0.1), 0 20px 48px rgba(2, 10, 8, 0.55);
 }
 
 @theme inline {
@@ -74,11 +104,11 @@
 }
 
 html {
-  color-scheme: dark;
+  color-scheme: light;
 }
 
-html[data-theme="light"] {
-  color-scheme: light;
+html[data-theme="night"] {
+  color-scheme: dark;
 }
 
 .shadow-card {
@@ -93,7 +123,7 @@ body {
 
 ::selection {
   background: var(--color-cyan);
-  color: #07111f;
+  color: #071a17;
 }
 
 @media (prefers-reduced-motion: reduce) {
