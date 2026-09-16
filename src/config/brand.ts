@@ -1,12 +1,13 @@
 export const brandConfig = {
   productName: "StudyCart",
   productShortName: "StudyCart",
+  productIdentity: "StudyCart AI Interview Support",
 
   productDescription:
-    "India's AI-powered student platform for exam preparation, books, answer key analysis, PDF notes, print services, jobs, mock tests, and career guidance.",
+    "AI-powered IT interview and career support platform — resume enhancement, a curated learning library, IT job listings with referral support, and interview tracking via Interview Management. Also home to a dedicated Government Job Platform for exam preparation.",
 
   tagline:
-    "Everything a Student Needs. One Platform.",
+    "Your AI-Powered IT Interview & Career Support",
 
   parentCompanyName: "Kasar.ai",
   parentCompanyUrl: "https://kasar.ai",

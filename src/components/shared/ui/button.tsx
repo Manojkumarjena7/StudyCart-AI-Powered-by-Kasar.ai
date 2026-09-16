@@ -13,7 +13,7 @@ const buttonVariants = cva(
           "bg-gradient-to-r from-brand-blue to-brand-cyan text-white hover:opacity-90",
         secondary:
           "bg-bg-card text-text-primary border border-border-subtle hover:border-brand-cyan/50",
-        ghost: "text-text-secondary hover:text-text-primary hover:bg-white/5",
+        ghost: "text-text-secondary hover:text-text-primary hover:bg-overlay-soft",
         outline:
           "border border-border-subtle text-text-primary hover:border-brand-cyan-light/60 hover:text-brand-cyan-light",
       },

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { GraduationCap } from "lucide-react";
-import { footerExploreNav, footerCommunityLinks, footerLegalNav } from "@/config/navigation";
+import { footerCommunityLinks, footerLegalNav } from "@/config/navigation";
+import { platformPillars } from "@/config/platform";
 import { brandConfig } from "@/config/brand";
 
 export function Footer() {
@@ -16,7 +17,7 @@ export function Footer() {
               <span className="font-semibold text-text-primary">{brandConfig.productShortName}</span>
             </div>
             <p className="mt-3 max-w-xs text-sm text-text-secondary">
-              Building smarter digital solutions for students.
+              {brandConfig.tagline}
             </p>
             <p className="mt-2 text-xs text-text-secondary">
               {brandConfig.endorsementText} · {brandConfig.location.display}
@@ -26,16 +27,26 @@ export function Footer() {
           <div>
             <h4 className="text-sm font-semibold text-text-primary">Explore</h4>
             <ul className="mt-4 space-y-2.5">
-              {footerExploreNav.map((item) => (
-                <li key={item.href}>
-                  <Link
-                    href={item.href}
-                    className="focus-ring rounded text-sm text-text-secondary transition-colors hover:text-brand-cyan-light"
-                  >
-                    {item.label}
-                  </Link>
-                </li>
-              ))}
+              <li>
+                <Link
+                  href="/"
+                  className="focus-ring rounded text-sm text-text-secondary transition-colors hover:text-brand-cyan-light"
+                >
+                  Home
+                </Link>
+              </li>
+              {platformPillars
+                .filter((pillar) => pillar.domain !== "interview-support")
+                .map((pillar) => (
+                  <li key={pillar.id}>
+                    <Link
+                      href={pillar.href}
+                      className="focus-ring rounded text-sm text-text-secondary transition-colors hover:text-brand-cyan-light"
+                    >
+                      {pillar.title}
+                    </Link>
+                  </li>
+                ))}
             </ul>
           </div>
 

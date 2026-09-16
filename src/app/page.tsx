@@ -1,26 +1,29 @@
-import { TrendingBanner } from "@/components/home/trending-banner";
 import { Hero } from "@/components/home/hero";
-import { HowItWorks } from "@/components/home/how-it-works";
-import { WhyUse } from "@/components/home/why-use";
-import { FeaturesPreview } from "@/components/home/features-preview";
-import { BrandStory } from "@/components/home/brand-story";
+import { HowItHelps } from "@/components/home/how-it-helps";
+import { ResumeShowcase } from "@/components/home/resume-showcase";
+import { LibraryShowcase } from "@/components/home/library-showcase";
+import { JobsShowcase } from "@/components/home/jobs-showcase";
+import { InterviewShowcase } from "@/components/home/interview-showcase";
+import { GovernmentJobsSection } from "@/components/home/government-jobs-section";
+import { TechnologySection } from "@/components/home/technology-section";
+import { ShortcutsSection } from "@/components/home/shortcuts-section";
 import { KasarTechEcosystem } from "@/components/ecosystem";
-import { AboutPreview } from "@/components/home/about-preview";
-import { trendingExamsRepository } from "@/lib/supabase/repositories/trendingExams.repository";
+import { FinalCta } from "@/components/home/final-cta";
 
-export default async function HomePage() {
-  const trendingExam = await trendingExamsRepository.getActive();
-
+export default function HomePage() {
   return (
     <>
-      <TrendingBanner exam={trendingExam} />
       <Hero />
-      <HowItWorks />
-      <WhyUse />
-      <FeaturesPreview />
-      <BrandStory />
+      <HowItHelps />
+      <ResumeShowcase />
+      <LibraryShowcase />
+      <JobsShowcase />
+      <InterviewShowcase />
+      <GovernmentJobsSection />
+      <TechnologySection />
+      <ShortcutsSection />
       <KasarTechEcosystem />
-      <AboutPreview />
+      <FinalCta />
     </>
   );
 }

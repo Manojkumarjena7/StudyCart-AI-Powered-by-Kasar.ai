@@ -1,5 +1,11 @@
 @import "tailwindcss";
 
+/*
+ * Theme tokens — see docs/DESIGN-SYSTEM.md.
+ * Dark is the default (no attribute needed) to match existing production pages that
+ * were only ever styled against the dark palette. Setting data-theme="light" on <html>
+ * (via ThemeProvider / theme-toggle) switches to the light palette.
+ */
 :root {
   --color-bg-primary: #07111f;
   --color-bg-secondary: #0b1728;
@@ -13,6 +19,27 @@
   --color-error: #ef4444;
   --color-warning: #f59e0b;
   --color-border: rgba(148, 163, 184, 0.15);
+  --color-overlay-soft: rgba(255, 255, 255, 0.05);
+  --color-overlay-strong: rgba(255, 255, 255, 0.1);
+  --shadow-card: 0 0 0 1px rgba(148, 163, 184, 0.08), 0 20px 48px rgba(2, 6, 23, 0.45);
+}
+
+:root[data-theme="light"] {
+  --color-bg-primary: #f8fafc;
+  --color-bg-secondary: #ffffff;
+  --color-bg-card: #ffffff;
+  --color-blue: #2563eb;
+  --color-cyan: #0891b2;
+  --color-cyan-light: #0e7490;
+  --color-text-primary: #0f172a;
+  --color-text-secondary: #475569;
+  --color-success: #16a34a;
+  --color-error: #dc2626;
+  --color-warning: #b45309;
+  --color-border: rgba(15, 23, 42, 0.1);
+  --color-overlay-soft: rgba(15, 23, 42, 0.04);
+  --color-overlay-strong: rgba(15, 23, 42, 0.08);
+  --shadow-card: 0 1px 2px rgba(15, 23, 42, 0.04), 0 16px 40px rgba(15, 23, 42, 0.08);
 }
 
 @theme inline {
@@ -31,6 +58,8 @@
   --color-error: var(--color-error);
   --color-warning: var(--color-warning);
   --color-border-subtle: var(--color-border);
+  --color-overlay-soft: var(--color-overlay-soft);
+  --color-overlay-strong: var(--color-overlay-strong);
 
   --font-sans: var(--font-system);
 }
@@ -46,6 +75,14 @@
 
 html {
   color-scheme: dark;
+}
+
+html[data-theme="light"] {
+  color-scheme: light;
+}
+
+.shadow-card {
+  box-shadow: var(--shadow-card);
 }
 
 body {

@@ -90,7 +90,7 @@ export function AnalyzerForm() {
           <CardDescription>
             Analyze your exam performance using AI. Paste your response sheet URL or upload your response sheet PDF to generate detailed insights instantly.
           </CardDescription>
-        </CardHeader>n
+        </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-6" noValidate>
             <div>

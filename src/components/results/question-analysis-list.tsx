@@ -18,7 +18,7 @@ const FILTERS: { value: FilterValue; label: string }[] = [
 const OUTCOME_STYLES: Record<QuestionOutcome, { icon: typeof CheckCircle2; text: string; bg: string }> = {
   correct: { icon: CheckCircle2, text: "text-success", bg: "bg-success/10" },
   wrong: { icon: XCircle, text: "text-error", bg: "bg-error/10" },
-  skipped: { icon: MinusCircle, text: "text-text-secondary", bg: "bg-white/5" },
+  skipped: { icon: MinusCircle, text: "text-text-secondary", bg: "bg-overlay-soft" },
 };
 
 export function QuestionAnalysisList({ questions }: { questions: QuestionResult[] }) {
@@ -83,7 +83,7 @@ export function QuestionAnalysisList({ questions }: { questions: QuestionResult[
                           <span className="ml-1.5 text-xs text-text-secondary">({q.questionId})</span>
                         )}
                       </span>
-                      <span className="rounded-full bg-white/5 px-2 py-0.5 text-xs text-text-secondary">
+                      <span className="rounded-full bg-overlay-soft px-2 py-0.5 text-xs text-text-secondary">
                         {q.subject}
                       </span>
                     </div>

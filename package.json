@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "test": "vitest run"
+    "test": "vitest run",
+    "generate:resume-examples": "node scripts/generate-resume-examples.mjs"
   },
   "dependencies": {
     "@napi-rs/canvas": "0.1.80",

@@ -31,7 +31,7 @@ export function SummaryCards({ summary }: { summary: ScoreSummary }) {
       value: summary.skipped,
       icon: MinusCircle,
       accent: "text-text-secondary",
-      bg: "bg-white/5",
+      bg: "bg-overlay-soft",
     },
     {
       label: "Accuracy",

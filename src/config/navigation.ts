@@ -6,17 +6,10 @@ export interface NavItem {
   comingSoon?: boolean;
 }
 
-// Adding a future module = adding one line here. No layout restructuring needed.
-export const mainNav: NavItem[] = [
-  { label: "Home", href: "/" },
-  { label: "AI Result Analyzer", href: "/analyzer" },
-  { label: "About", href: "/about" },
-  { label: "Jobs", href: "/jobs", comingSoon: true },
-  { label: "Books", href: "/books", comingSoon: true },
-  { label: "Tuition", href: "/tuition", comingSoon: true },
-];
-
-export const footerExploreNav: NavItem[] = mainNav;
+// Domain nav items (Resume/Learn/Get Hired/Interview Support/Government Jobs) come
+// from src/config/platform.ts — the single source of truth for pillar metadata. This
+// file only holds nav items that aren't a platform pillar: Home, legal, and community.
+// See docs/ARCHITECTURE.md "Service catalog model".
 
 export const footerCommunityLinks = [
   { label: "Telegram", key: "telegram" },
@@ -27,4 +20,5 @@ export const footerCommunityLinks = [
 export const footerLegalNav: NavItem[] = [
   { label: "Privacy", href: "/privacy" },
   { label: "Terms", href: "/terms" },
+  { label: "About", href: "/about" },
 ];
