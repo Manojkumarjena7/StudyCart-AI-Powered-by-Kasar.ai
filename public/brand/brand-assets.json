@@ -1,0 +1,25 @@
+{
+  "brand": "KasarTech.ai",
+  "positioning": "AI Interview Support",
+  "assets": [
+    "brand-colors.txt",
+    "social/og-image.png",
+    "logo/kasartech-logo-dark.svg",
+    "logo/kasartech-logo-white.svg",
+    "logo/kasartech-symbol.svg",
+    "logo/kasartech-wordmark.svg",
+    "logo/kasartech-symbol-white.svg",
+    "logo/kasartech-logo-light.svg",
+    "logo/kasartech-symbol-black.svg",
+    "docs/USAGE.md",
+    "icons/icon-192.png",
+    "icons/favicon.ico",
+    "icons/icon-white-512.png",
+    "icons/favicon-48.png",
+    "icons/icon-dark-512.png",
+    "icons/icon-512.png",
+    "icons/icon-180.png",
+    "icons/favicon-16.png",
+    "icons/favicon-32.png"
+  ]
+}

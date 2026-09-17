@@ -11,6 +11,7 @@ import {
   Users,
   MessageSquareText,
 } from "lucide-react";
+import { KasarTechSymbol } from "@/components/shared/kasartech-symbol";
 
 export type ProductStatus = "live" | "coming-soon";
 
@@ -106,9 +107,11 @@ export const kasarTechCompany = {
   name: "KasarTech.ai",
   tagline: "Technology & Solutions",
   description: "The technology company building every product in this ecosystem.",
-  icon: Code2,
-  accentFrom: "#2563eb",
-  accentTo: "#818cf8",
+  icon: KasarTechSymbol,
+  // KasarTech's own brand colors (see docs/DESIGN-SYSTEM.md §Brand identity) — used
+  // only for this company card, not the app-wide blue/cyan token system.
+  accentFrom: "#0E7A5F",
+  accentTo: "#20D39A",
   learnMoreUrl: "/about",
   pillars: [
     { label: "AI Solutions", icon: Code2 },

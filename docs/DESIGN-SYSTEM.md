@@ -4,11 +4,80 @@ This documents what is **actually implemented** as of Phase 1. It replaces the
 aspirational theme description previously in `AI-AGENT-GUIDE.md` (which described a
 light/dark system that didn't exist in code until now).
 
-## Brand
+## Brand identity (KasarTech.ai rebrand)
+
+As of the branding phase in `feature/kasartech-branding`, the site's **primary,
+site-wide displayed identity** is **KasarTech.ai** (`brandConfig.siteName`), positioned
+as **"AI Interview Support"** (`brandConfig.sitePositioning`). This drives:
+
+- Browser tab title (`src/app/layout.tsx`): "KasarTech.ai — AI Interview Support"
+- Navbar and footer brand mark (`src/components/layout/navbar.tsx`,
+  `src/components/layout/footer.tsx`)
+- Favicon / app icon (`src/app/favicon.ico`, `src/app/apple-icon.png`, plus explicit
+  16/32/48px sizes wired via `metadata.icons` in `layout.tsx`)
+- Footer copyright line
+
+**`brandConfig.productName`/`productShortName` ("StudyCart") were deliberately left
+unchanged** — they are still read by `src/features/reports/reportGenerator.ts` (printed
+on generated analyzer PDF reports), `src/config/site.ts`'s `rankingDisclaimer`, and the
+About page's origin-story narrative (which specifically distinguishes "the platform"
+from "StudyCart, the first product built on it"). Renaming those fields would have
+silently changed protected analyzer/report output and made the About page's own
+narrative self-contradictory. **StudyCart remains the specific product name** for that
+narrower scope — see `docs/PRODUCT.md`. Per-page `<title>` tags outside the root layout
+(e.g. `/resume`, `/analyzer`, `/about`) and homepage/resume-page body copy were left
+untouched for the same reason, and because this phase is branding-only, not a content
+redesign.
+
+### Brand assets
+
+`public/brand/` is the **single production brand asset location** — there is
+intentionally only one. It currently holds the assets from
+`KasarTech-Selected-Brand-Pack.zip` ("Package 2"), the approved/latest visual
+direction, which superseded an earlier `KasarTech-Brand-Assets.zip` ("Package 1")
+pack. Package 1's zip remains untouched at the project root as a historical/safety
+copy, but nothing in the app references it anymore — do not reintroduce it.
+
+- `public/brand/logo/` — `kasartech-symbol.svg` (transparent, mark-only — **use this
+  for all in-app UI placements**: navbar, footer, ecosystem card), `-black`/`-white`
+  variants, `kasartech-wordmark.svg`, and `kasartech-logo-{light,white,dark}.svg` (full
+  lockups with the wordmark set in Inter — still **do not use these for in-app UI
+  text**; prefer the symbol + live HTML text, per the pack's own `docs/USAGE.md`).
+  **Never use `kasartech-logo-dark.svg`** — it renders dark navy text on a dark
+  background and is illegible as shipped (a defect present in both packs). Use
+  `kasartech-logo-white.svg` wherever a full lockup on a dark surface is needed.
+- `public/brand/icons/` — favicon/app-icon PNGs (`favicon-{16,32,48}.png`,
+  `icon-{180,192,512}.png`, `icon-{white,dark}-512.png`) and `favicon.ico`.
+- `public/brand/social/og-image.png` — Open Graph image (1200×630), wired via
+  `metadata.openGraph.images` in `layout.tsx`. New in Package 2; Package 1 had no
+  equivalent.
+- `public/brand/{docs/USAGE.md,brand-assets.json,brand-colors.txt}` — the pack's own
+  provenance/reference files, kept as-is.
+
+Do not redraw, recolor, or regenerate any of these — use them as supplied.
+
+### Brand colors — the theme system's actual color values
+
+Unlike the first branding pass (which scoped KasarTech green to one ecosystem card),
+these colors are now the app's **primary theme palette** — see §Theme system below.
+
+| Color | Hex | Role |
+|---|---|---|
+| Primary Green | `#0E7A5F` | `--color-blue` in Green/Day themes — primary accent/CTA |
+| Accent Green | `#20D39A` | `--color-cyan` in all three themes — secondary accent, gradient end |
+| Dark Background | `#071A17` | Night theme's `--color-bg-primary` |
+| Text | `#0F172A` | `--color-text-primary` in Green/Day themes |
+| Muted | `#64748B` | Reference value; Green theme uses it as `--color-text-secondary`, Day uses a slightly cooler `#475569` for a more neutral-gray feel |
+
+`viewport.themeColor` in `layout.tsx` uses the Primary Green (`#0E7A5F`).
+
+### Legacy brand fields (unchanged)
 
 - Name: **StudyCart**, endorsement: **Powered by Kasar.ai**
 - Product identity: **StudyCart AI Interview Support**
-- Tagline: "Your AI-Powered IT Interview & Career Support" (`brandConfig.tagline`)
+- Tagline: "Your AI-Powered IT Interview & Career Support" (`brandConfig.tagline`,
+  still used verbatim in the footer — it doesn't name-check either brand, so it reads
+  correctly under both)
 - Typeface: **Inter** (`--font-system` in `globals.css`), with a standard system-font
   fallback stack. No new font dependency was added.
 
@@ -34,23 +103,51 @@ automatically.
 | `--color-success` / `--color-error` / `--color-warning` | `text-success` etc. | Status colors |
 | `--shadow-card` | `.shadow-card` utility | Elevated card shadow, theme-aware |
 
-## Light / dark theme
+## Theme system — three modes
 
-- **Dark is the default** (no `data-theme` attribute needed) — this exactly matches
-  the site's pre-existing appearance, so nothing that was already shipped (analyzer,
-  results, homepage) changes visually by default.
-- Setting `data-theme="light"` on `<html>` switches to the light palette. This is
-  applied by:
-  - `src/components/shared/theme-provider.tsx` — `ThemeProvider` + `useTheme()`,
-    persists the choice to `localStorage` (`studycart-theme`).
-  - `src/components/shared/theme-toggle.tsx` — `ThemeToggle`, the sun/moon control in
-    the navbar.
-  - An inline script in `src/app/layout.tsx` `<head>` applies a saved `"light"`
-    preference before hydration, avoiding a flash of the wrong theme.
-- `html { color-scheme: dark }` / `html[data-theme="light"] { color-scheme: light }`
-  keeps native form controls (scrollbars, checkboxes, etc.) theme-correct too.
+The app has exactly **three** visual modes, chosen via `src/components/shared/
+theme-toggle.tsx` (a dropdown in the navbar, not a binary toggle):
 
-### Known scope limit (resolved in Phase 2)
+| Mode | `data-theme` | Feel |
+|---|---|---|
+| **KasarTech Green** | *(none — the default)* | Off-white surface + dark navy type + green CTA/glow. The primary brand experience. |
+| **Day** | `"day"` | Clean, neutral light mode. Same green accent as Green, but gray (not green-tinted) borders/overlays — deliberately more restrained/neutral overall. |
+| **Night** | `"night"` | Dark green-black (`#071A17`), soft-white text, brighter accent green leading on CTAs for contrast. Intentionally designed, not Day inverted — its own border/overlay tint, its own muted-text color. |
+
+**KasarTech Green is the default a first-time visitor sees** — this is a deliberate
+choice, not an accident of implementation order: it's the strongest expression of the
+approved brand identity, and per the branding brief every new visitor should land on
+it before any Day/Night preference exists. It requires no `data-theme` attribute
+(mirrors how "dark" used to be the zero-attribute default pre-rebrand), so there's no
+extra cost to making it the default.
+
+- `src/components/shared/theme-provider.tsx` — `ThemeProvider` + `useTheme()`
+  (`{ theme, setTheme }`), persists the choice to `localStorage` (`studycart-theme`
+  key, kept from the pre-existing implementation). Any stored value other than
+  `"day"`/`"night"`/`"green"` — including the old two-mode `"light"`/`"dark"` values —
+  is treated as absent and falls back to the Green default; there's no migration
+  mapping between the old and new mode names.
+- `src/components/shared/theme-toggle.tsx` — `ThemeToggle`, a small accessible
+  dropdown (`role="menu"`/`"menuitemradio"`, closes on outside-click or Escape,
+  restores focus to the trigger) showing all three options with a check mark on the
+  active one: ☀ Day, 🌙 Night, and a green gradient dot for KasarTech Green (matching
+  the 🟢 notation in the brief — a color swatch, not an icon metaphor).
+- An inline script in `src/app/layout.tsx` `<head>` applies a saved `"day"`/`"night"`
+  preference before hydration, avoiding a flash of the Green default when a visitor
+  has actually chosen something else.
+- `html { color-scheme: light }` / `html[data-theme="night"] { color-scheme: dark }`
+  keeps native form controls theme-correct — Green and Day are both "light-family"
+  themes, only Night is "dark-family."
+
+**Known, deliberate consequence:** the Government Job Platform's `/analyzer`,
+`/result/[resultId]`, and `/analysis/[resultId]` pages now default to Green (off-white)
+instead of the old dark-navy default, since their UI is built entirely from the same
+semantic tokens (`bg-bg-primary`, `text-text-secondary`, `bg-overlay-soft`, etc.) as
+the rest of the app — no analyzer code changed, but the theme it renders against did.
+Verified readable/functional in all three modes during this phase's browser pass; no
+analyzer/parser/scoring/ranking/report logic was touched.
+
+### Known scope limit (resolved in Phase 2, pre-rebrand)
 
 As of Phase 2, `results/summary-cards.tsx`, `results/question-analysis-list.tsx`, and
 `shared/ui/progress.tsx` were switched from literal `bg-white/5` to the theme-aware
@@ -124,12 +221,18 @@ When a real asset is ready:
   (`resume-showcase.tsx`, etc.) don't need to change.
 - Add descriptive `alt` text; respect `prefers-reduced-motion` for any video/animation.
 
-`public/resumes/` (added in the Resume MVP) is different from the three above: it holds
-**real, downloadable PDF content** (the 3 curated example resumes), not decorative
-image/video/mockup assets. Generated via `npm run generate:resume-examples`
-(`scripts/generate-resume-examples.mjs`, using `jsPDF`). Card thumbnails for these are
-still CSS-built components (`resume-thumbnail.tsx`) — the PDF itself is never loaded
-just to render a thumbnail. See [RESUME-ENHANCEMENT.md](./RESUME-ENHANCEMENT.md).
+`public/resumes/` is different from the three above: it holds **real, downloadable
+PDF/DOCX content** (the 3 public-safe resume templates — see
+[RESUME-ENHANCEMENT.md](./RESUME-ENHANCEMENT.md)), not decorative image/video/mockup
+assets. Each template's card preview (`public/resumes/template-0N/preview.png`) is a
+**real page-1 render of that template's actual PDF** — generated via
+`npm run generate:resume-previews` (`scripts/generate-resume-previews.mjs`, using
+`pdfjs-dist` + `@napi-rs/canvas`, both already project dependencies). This is
+intentionally different from the homepage mockups above: a resume template gallery
+needs to show the *real* design so a visitor can compare templates before choosing
+one — a hand-built CSS approximation (the previous approach) can't do that
+faithfully, which is why this is the one place in the app that renders a real
+document image rather than an illustrative component.
 
 ## Navigation
 

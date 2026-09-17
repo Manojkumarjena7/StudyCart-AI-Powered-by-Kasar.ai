@@ -2,19 +2,20 @@
 
 import { useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
-import { X, Download, ExternalLink } from "lucide-react";
+import { X, Download, FileText, ExternalLink } from "lucide-react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import type { ResumeExample } from "@/config/resume-examples";
 
 interface ResumePdfViewerModalProps {
   example: ResumeExample | null;
   onClose: () => void;
+  onRequestDownload: (example: ResumeExample, format: "pdf" | "docx") => void;
 }
 
 const FOCUSABLE_SELECTOR =
   'a[href], button:not([disabled]), textarea, input, select, [tabindex]:not([tabindex="-1"])';
 
-export function ResumePdfViewerModal({ example, onClose }: ResumePdfViewerModalProps) {
+export function ResumePdfViewerModal({ example, onClose, onRequestDownload }: ResumePdfViewerModalProps) {
   const panelRef = useRef<HTMLDivElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const triggerRef = useRef<HTMLElement | null>(null);
@@ -93,14 +94,22 @@ export function ResumePdfViewerModal({ example, onClose }: ResumePdfViewerModalP
                 </p>
               </div>
               <div className="flex shrink-0 items-center gap-2">
-                <a
-                  href={example.pdfPath}
-                  download
+                <button
+                  type="button"
+                  onClick={() => onRequestDownload(example, "pdf")}
                   className="focus-ring hidden items-center gap-1.5 rounded-lg border border-border-subtle px-3 py-1.5 text-xs font-medium text-text-secondary transition-colors hover:text-brand-cyan-light sm:flex"
                 >
                   <Download className="h-3.5 w-3.5" />
-                  Download
-                </a>
+                  PDF
+                </button>
+                <button
+                  type="button"
+                  onClick={() => onRequestDownload(example, "docx")}
+                  className="focus-ring hidden items-center gap-1.5 rounded-lg border border-border-subtle px-3 py-1.5 text-xs font-medium text-text-secondary transition-colors hover:text-brand-cyan-light sm:flex"
+                >
+                  <FileText className="h-3.5 w-3.5" />
+                  Word
+                </button>
                 <button
                   ref={closeButtonRef}
                   type="button"
@@ -121,23 +130,31 @@ export function ResumePdfViewerModal({ example, onClose }: ResumePdfViewerModalP
               />
             </div>
 
-            <div className="flex items-center justify-between gap-3 border-t border-border-subtle px-4 py-3 sm:hidden">
-              <a
-                href={example.pdfPath}
-                download
+            <div className="flex items-center gap-2 border-t border-border-subtle px-4 py-3 sm:hidden">
+              <button
+                type="button"
+                onClick={() => onRequestDownload(example, "pdf")}
                 className="focus-ring flex flex-1 items-center justify-center gap-1.5 rounded-lg border border-border-subtle px-3 py-2 text-sm font-medium text-text-secondary"
               >
                 <Download className="h-4 w-4" />
-                Download
-              </a>
+                PDF
+              </button>
+              <button
+                type="button"
+                onClick={() => onRequestDownload(example, "docx")}
+                className="focus-ring flex flex-1 items-center justify-center gap-1.5 rounded-lg border border-border-subtle px-3 py-2 text-sm font-medium text-text-secondary"
+              >
+                <FileText className="h-4 w-4" />
+                Word
+              </button>
               <a
                 href={example.pdfPath}
                 target="_blank"
                 rel="noreferrer"
-                className="focus-ring flex flex-1 items-center justify-center gap-1.5 rounded-lg border border-border-subtle px-3 py-2 text-sm font-medium text-text-secondary"
+                aria-label="Open PDF in new tab"
+                className="focus-ring flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-border-subtle text-text-secondary"
               >
                 <ExternalLink className="h-4 w-4" />
-                Open
               </a>
             </div>
           </motion.div>
