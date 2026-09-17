@@ -76,6 +76,13 @@ export default function AboutPage() {
       </div>
 
       <Card>
+        <CardContent className="space-y-2 text-center text-sm text-text-secondary">
+          <p className="font-medium text-text-primary">About KasarTech.ai</p>
+          <p>{brandConfig.kasartechAboutDescription}</p>
+        </CardContent>
+      </Card>
+
+      <Card>
         <CardContent className="flex flex-col items-center gap-1 text-center text-sm text-text-secondary">
           <p className="font-medium text-text-primary">{brandConfig.parentCompanyName}</p>
           <p>{brandConfig.location.display}</p>

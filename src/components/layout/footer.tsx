@@ -23,7 +23,15 @@ export function Footer() {
             <p className="mt-3 max-w-xs text-sm text-text-secondary">
               {brandConfig.tagline}
             </p>
-            <p className="mt-2 text-xs text-text-secondary">{brandConfig.location.display}</p>
+            <p className="mt-3 max-w-xs text-xs text-text-secondary">
+              {brandConfig.studycartFooterDescription}
+            </p>
+            <p className="mt-3 text-xs text-text-secondary">
+              Head Office: {brandConfig.location.headOffice}
+            </p>
+            <p className="text-xs text-text-secondary">
+              Other Offices: {brandConfig.location.otherOffices.join(" · ")}
+            </p>
           </div>
 
           <div>

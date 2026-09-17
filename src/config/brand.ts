@@ -28,7 +28,15 @@ export const brandConfig = {
     state: "Odisha",
     country: "India",
     display: "Bhubaneswar, Odisha, India",
+    headOffice: "Bengaluru, Karnataka, India",
+    otherOffices: ["Gurugram, Haryana, India", "Bhubaneswar, Odisha, India"],
   },
+
+  kasartechAboutDescription:
+    "KasarTech.ai is a technology startup building practical software products and AI-powered tools for students, professionals, and businesses. We focus on simple, useful solutions that make everyday work and career growth easier.",
+
+  studycartFooterDescription:
+    "KasarTech.ai is a technology startup building practical software products and AI-powered tools. StudyCart is our learning and career support platform, built to help students and job seekers with practical resources, career tools, and opportunities.",
 
   socialLinks: {
     telegram: "https://t.me/studycartAI",

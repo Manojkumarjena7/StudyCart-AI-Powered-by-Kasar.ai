@@ -1,8 +1,11 @@
-import { Heart, ExternalLink } from "lucide-react";
-import { getSupportPaytmUrl } from "@/lib/utils/support";
+"use client";
+
+import { useState } from "react";
+import { Heart } from "lucide-react";
+import { SupportModal } from "@/components/shared/support-modal";
 
 export function SupportStudyCartSection() {
-  const paytmUrl = getSupportPaytmUrl();
+  const [open, setOpen] = useState(false);
 
   return (
     <section className="mx-auto max-w-5xl px-4 py-10 sm:px-6 lg:px-8">
@@ -20,25 +23,16 @@ export function SupportStudyCartSection() {
           </div>
         </div>
 
-        {paytmUrl ? (
-          <a
-            href={paytmUrl}
-            target="_blank"
-            rel="noreferrer"
-            className="focus-ring flex shrink-0 items-center gap-1.5 rounded-lg bg-brand-blue px-4 py-2.5 text-sm font-medium text-white transition-opacity hover:opacity-90"
-          >
-            Support via Paytm
-            <ExternalLink className="h-3.5 w-3.5" />
-          </a>
-        ) : (
-          <span
-            title="Coming soon"
-            className="flex shrink-0 cursor-not-allowed items-center gap-1.5 rounded-lg border border-border-subtle px-4 py-2.5 text-sm font-medium text-text-secondary opacity-60"
-          >
-            Support via Paytm — Coming soon
-          </span>
-        )}
+        <button
+          type="button"
+          onClick={() => setOpen(true)}
+          className="focus-ring flex shrink-0 items-center gap-1.5 rounded-lg bg-brand-blue px-4 py-2.5 text-sm font-medium text-white transition-opacity hover:opacity-90"
+        >
+          Support via Paytm ❤️
+        </button>
       </div>
+
+      <SupportModal context={open ? "studycart" : null} onClose={() => setOpen(false)} />
     </section>
   );
 }
