@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Navbar } from "@/components/layout/navbar";
 import { Footer } from "@/components/layout/footer";
 import { ThemeProvider, themeInitScript } from "@/components/shared/theme-provider";
+import { SupportFab } from "@/components/shared/support-fab";
 import { brandConfig } from "@/config/brand";
 import "./globals.css";
 
@@ -54,6 +55,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
           <Navbar />
           <main className="flex-1">{children}</main>
           <Footer />
+          <SupportFab />
         </ThemeProvider>
       </body>
     </html>

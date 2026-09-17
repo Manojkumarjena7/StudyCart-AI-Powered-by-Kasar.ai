@@ -221,12 +221,18 @@ When a real asset is ready:
   (`resume-showcase.tsx`, etc.) don't need to change.
 - Add descriptive `alt` text; respect `prefers-reduced-motion` for any video/animation.
 
-`public/resumes/` (added in the Resume MVP) is different from the three above: it holds
-**real, downloadable PDF content** (the 3 curated example resumes), not decorative
-image/video/mockup assets. Generated via `npm run generate:resume-examples`
-(`scripts/generate-resume-examples.mjs`, using `jsPDF`). Card thumbnails for these are
-still CSS-built components (`resume-thumbnail.tsx`) — the PDF itself is never loaded
-just to render a thumbnail. See [RESUME-ENHANCEMENT.md](./RESUME-ENHANCEMENT.md).
+`public/resumes/` is different from the three above: it holds **real, downloadable
+PDF/DOCX content** (the 3 public-safe resume templates — see
+[RESUME-ENHANCEMENT.md](./RESUME-ENHANCEMENT.md)), not decorative image/video/mockup
+assets. Each template's card preview (`public/resumes/template-0N/preview.png`) is a
+**real page-1 render of that template's actual PDF** — generated via
+`npm run generate:resume-previews` (`scripts/generate-resume-previews.mjs`, using
+`pdfjs-dist` + `@napi-rs/canvas`, both already project dependencies). This is
+intentionally different from the homepage mockups above: a resume template gallery
+needs to show the *real* design so a visitor can compare templates before choosing
+one — a hand-built CSS approximation (the previous approach) can't do that
+faithfully, which is why this is the one place in the app that renders a real
+document image rather than an illustrative component.
 
 ## Navigation
 

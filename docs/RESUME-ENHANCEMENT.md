@@ -17,32 +17,46 @@ IT resume looks like and identify what they can improve in their own resume."* N
 resume builder, not paid enhancement — see [ROADMAP.md](./ROADMAP.md) for the phase
 plan.
 
-### Resume Examples — LIVE
+### Resume Templates — LIVE
 
-Three curated, real, downloadable reference resumes (Software Engineer / Fresher, QA
-Automation Engineer / 1–3 years, Data Analyst / 2–4 years), shown in a horizontal
-carousel (desktop: ~3–4 visible; mobile: one at a time, native scroll-snap).
+Three curated, public-safe resume templates — each recreated from a real candidate's
+resume with **all personally identifying information replaced by generic
+placeholders** (name, email, phone, city, employer, institution, and any real
+client/brand names mentioned in project text — see `Public-Safe-Resume-Templates.zip`'s
+own `README.md` for the exact per-template source mapping). Independently
+re-verified (not just taken on that README's word) against the rendered PDF text and
+the DOCX/PDF embedded metadata before integration — no real names, emails, phone
+numbers, addresses, personal URLs, or institution/employer names found in any of the
+3. Shown in a balanced, non-scrolling responsive grid (1 column mobile, 2 tablet, 3
+desktop — see `resume-examples-grid.tsx`).
 
-- Config-driven: `src/config/resume-examples.ts` — the single source of truth. Adding a
-  fourth example is a config entry + a PDF file, no UI changes required.
-- The 3 PDFs are real, generated files (not stock content, not broken links) at
-  `public/resumes/*.pdf`, built with `jsPDF` (already a project dependency, already
-  used by `src/features/reports/reportGenerator.ts` — no new PDF library was added).
-  Regenerate/extend via `npm run generate:resume-examples`
-  (`scripts/generate-resume-examples.mjs`). Each PDF is explicitly footer-labeled
-  "Sample resume for demonstration purposes" — these are fictional candidates, not real
-  people.
-- Card thumbnails are **CSS-built mockups** (`resume-thumbnail.tsx`), not rendered PDF
-  pages or images — no PDF is loaded until the user clicks View or Download. See
-  [DESIGN-SYSTEM.md](./DESIGN-SYSTEM.md) §Assets.
+- Config-driven: `src/config/resume-examples.ts` — the single source of truth, one
+  entry per template with a `pdfPath`, `docxPath`, and `previewImagePath` (+ its
+  known `previewWidth`/`previewHeight`). Adding a fourth template is a config entry +
+  `public/resumes/template-04/{resume.pdf,resume.docx}` + running
+  `npm run generate:resume-previews`, no other UI changes required.
+- Assets live at `public/resumes/template-0N/{resume.pdf,resume.docx,preview.png}`.
+  The earlier fictional demo PDFs (`software-engineer.pdf`,
+  `qa-automation-engineer.pdf`, `data-analyst.pdf`, generated via
+  `scripts/generate-resume-examples.mjs`) were retired — that script is left in place
+  but is currently unused.
+- **Card previews are real page-1 renders of the actual PDF** — generated via
+  `scripts/generate-resume-previews.mjs` (`pdfjs-dist` + `@napi-rs/canvas`, both
+  already project dependencies), never a hand-built HTML/CSS recreation (that was
+  the previous approach, `resume-thumbnail.tsx`, now removed — a skeleton couldn't
+  show a visitor the actual difference between templates). The PDF itself is still
+  never loaded client-side just to show a thumbnail — the preview is a plain static
+  image. See [DESIGN-SYSTEM.md](./DESIGN-SYSTEM.md) §Assets.
 - **View** opens an accessible modal (`resume-pdf-viewer-modal.tsx`) that embeds the PDF
   in an `<iframe>`, relying on the **browser's native PDF viewer** for zoom, page
   navigation, and printing — no PDF-rendering library was added for this (per
   AI-AGENT-GUIDE.md, existing capability was checked and preferred over adding one).
   Modal: focus-trapped, closes on Escape or backdrop click, restores focus to the
-  trigger on close, has its own Download link, respects `prefers-reduced-motion`.
-- **Download** works directly (`<a download>`) — no login required, these are public
-  reference documents.
+  trigger on close, respects `prefers-reduced-motion`. **Viewing never shows the
+  support prompt.**
+- **Download** (PDF or Word, from either the card or the viewer modal) shows the
+  optional `support-download-modal.tsx` prompt first — see §Support KasarTech.ai
+  below. No login required either way; these are public reference documents.
 
 ### Resume Analyzer foundation — UI live, analysis NOT live
 
@@ -63,12 +77,41 @@ placeholder result. See docs/AI-AGENT-GUIDE.md §4 "Do NOT Invent — Automation
 A static, editorial 5-step horizontal guide (Structure → Keywords → Impact → Projects →
 Polish) — plain content, no backend.
 
-### Support StudyCart — LIVE (button disabled until configured)
+### Support StudyCart (page section) — LIVE (button disabled until configured)
 
-A donation prompt, config-driven via `NEXT_PUBLIC_SUPPORT_PAYTM_URL`
-(`src/lib/utils/support.ts`). Unset today, so the button renders disabled/"Coming soon."
-No QR code is shown — a QR image was **not fabricated**; it will only appear once a real
-one is provided and configured. No payment gateway, no pricing, nothing hard-coded.
+A separate, pre-existing donation prompt on `/resume`
+(`support-studycart-section.tsx`), config-driven via `NEXT_PUBLIC_SUPPORT_PAYTM_URL`
+(`src/lib/utils/support.ts`). Unset today, so its button renders disabled/"Coming
+soon." Unrelated to the modal system below — not touched by it.
+
+### Support popups (shared component) — LIVE
+
+`src/components/shared/support-modal.tsx` is a single reusable modal with two
+content variants, selected via a `context` prop:
+
+- **`"kasartech"`** — shown before a resume template's PDF or Word download
+  (triggered from either the card or the PDF viewer modal's Download buttons —
+  **never** from View/Preview). Both action buttons — "Continue Free Download →"
+  and "Maybe Later" — **both trigger the download** and close the modal; only the
+  ✕ close button (or Escape/backdrop) closes **without** downloading. The file is
+  never gated, no payment is ever verified, no login is ever required.
+- **`"studycart"`** — a purely informational variant opened from the global,
+  persistent `support-fab.tsx` button ("❤️ Support StudyCart", fixed bottom-right on
+  every page). Single "Close" button, no download semantics at all.
+
+**Paytm QR code:** both variants render `public/support/paytm-qr.png` — the real,
+supplied Paytm/UPI QR. **No QR code is generated, recreated, or altered by this
+codebase**: the file is a lossless crop of the original (only the personal-name
+header and a promotional banner were cropped away; the logo/QR pattern/UPI-ID/badges
+are pixel-identical to the source). Overridable via `NEXT_PUBLIC_SUPPORT_QR_IMAGE`
+if the asset ever needs to change; if that ever resolves to nothing, both variants
+gracefully fall back (to the `getSupportPaytmUrl()` text link, or to no payment
+affordance at all) rather than showing a placeholder.
+
+**Branding is intentionally not unified**: "KasarTech.ai" is used for the
+resume/career-tooling context, "StudyCart" for the general/learning context and the
+global button — see `docs/DESIGN-SYSTEM.md` §Brand identity for why these two names
+coexist deliberately rather than one replacing the other everywhere.
 
 ## COMING SOON
 

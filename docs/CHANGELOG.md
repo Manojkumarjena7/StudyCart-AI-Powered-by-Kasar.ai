@@ -1,5 +1,158 @@
 # Changelog
 
+## Real page-1 resume template previews (replacing skeleton thumbnails)
+
+**Scope:** Resume template cards now show a real render of each template's actual
+first page instead of a fake CSS/skeleton document. UI-only — the support/download
+flow from the previous phase was not touched.
+
+### Added
+- `scripts/generate-resume-previews.mjs` (`npm run generate:resume-previews`) —
+  renders page 1 of each `public/resumes/template-0N/resume.pdf` to `preview.png`
+  using `pdfjs-dist` + `@napi-rs/canvas` (both already project dependencies — no new
+  one added; `@napi-rs/canvas` is in fact the exact native canvas backend
+  `pdfjs-dist`'s own built-in Node canvas factory uses for this purpose).
+- `public/resumes/template-0{1,2,3}/preview.png` — 900×1273px (exact A4 ratio,
+  since that's the actual page size scaled to the target width), generated directly
+  from each template's real PDF. Not a hand-built recreation.
+
+### Changed
+- `src/config/resume-examples.ts` — replaced the `accent` field (only used by the
+  removed skeleton) with `previewImagePath`/`previewWidth`/`previewHeight`.
+- `src/components/resume/resume-example-card.tsx` — the card's preview area now
+  renders the real `preview.png` via `next/image` in an A4-ratio (`aspect-[900/1273]`)
+  container with `object-contain object-top` (shows the complete page, never
+  stretched/distorted/cropped) and an explicit white background (the resume page is
+  real paper, not themed UI chrome — stays a true white rectangle in Day, Night, and
+  KasarTech Green alike). A very subtle `scale-[1.03]` hover zoom was added per the
+  brief; no other animation.
+- `docs/DESIGN-SYSTEM.md`, `docs/COMPONENTS.md`, `docs/RESUME-ENHANCEMENT.md` —
+  updated to describe the real-preview pipeline (PDF → page-1 thumbnail → card) and
+  the new script.
+
+### Removed
+- `src/components/resume/resume-thumbnail.tsx` — the CSS-built skeleton preview.
+  Confirmed via search it had no other consumer before deleting.
+
+## Unified support/donation UX (reusable modal + global CTA)
+
+**Scope:** Replaced the resume-specific support popup with a single reusable
+`SupportModal` component (two content variants), added a persistent site-wide
+"❤️ Support StudyCart" button, and finalized the exact copy/behavior for both
+variants per the approved reference designs. No analyzer/parser/scoring/ranking/
+reports/Supabase code touched.
+
+### Added
+- `src/components/shared/support-modal.tsx` — reusable modal, `context: "kasartech"
+  | "studycart"`. Both variants: real focus trap, Escape/backdrop-click to close,
+  restores focus, capture-phase Escape handling (safe if ever stacked with another
+  modal). Falls back to a single narrower column if no QR/Paytm link is available,
+  instead of leaving an empty second column.
+- `src/components/shared/support-fab.tsx` — small fixed bottom-right button,
+  rendered once in `src/app/layout.tsx`, present on every page; opens
+  `SupportModal` with `context="studycart"`.
+- `getSupportQrImageSrc()` in `src/lib/utils/support.ts` — defaults to
+  `/support/paytm-qr.png` (see below), overridable via
+  `NEXT_PUBLIC_SUPPORT_QR_IMAGE`.
+- `public/support/paytm-qr.png` — the real, supplied Paytm/UPI QR code. A **lossless
+  crop** of the original image the user provided: only the personal-name header
+  ("Manoj Kumar Jena") and the promotional "Get Assured Cashback" banner were cropped
+  away (pure canvas crop via PowerShell's `System.Drawing`, no resize/recompress);
+  the Paytm logo, the QR pattern itself, the UPI ID text, and the payment-method
+  badges are pixel-identical to the source. The QR was never generated, recreated,
+  or altered — this satisfies the explicit "may omit unnecessary personal
+  information around the QR" allowance without touching the scannable pattern.
+
+### Changed
+- `src/components/resume/resume-examples-section.tsx` — now renders the shared
+  `SupportModal` (`context="kasartech"`) instead of the resume-specific one.
+  **Behavior change from the previous iteration:** both "Continue Free Download →"
+  and "Maybe Later" now trigger the download (per the finalized reference design);
+  only the ✕ close button/Escape/backdrop closes without downloading.
+- `docs/RESUME-ENHANCEMENT.md`, `docs/COMPONENTS.md` — updated to describe the
+  shared component, the two contexts, the global button, and the QR fallback.
+
+### Removed
+- `src/components/resume/support-download-modal.tsx` — deleted, superseded by the
+  shared `SupportModal`. Confirmed no remaining references anywhere in `src/`.
+
+### QR sourcing note
+- A full-project search at the start of this task confirmed **no Paytm QR image
+  existed anywhere in this codebase** — the modal was built to gracefully omit the
+  QR block rather than fabricate one, per this project's standing rule. The user
+  then supplied the real QR image directly; it was cropped (not altered) and wired
+  in as described above. The graceful single-column fallback remains in the code
+  for defensive correctness (e.g. if the asset or env var is ever removed).
+- `src/components/resume/support-studycart-section.tsx` (existing page-level
+  "Support StudyCart" section on `/resume`) is unrelated to this modal system and
+  was not touched.
+
+## Public-safe resume templates (3, replacing the fictional demo examples)
+
+**Scope:** Swapped the 3 fictional generated demo resumes for 3 public-safe templates
+from `Public-Safe-Resume-Templates.zip`, each recreated from a real resume with all
+personal information replaced by generic placeholders. Added PDF + Word (DOCX)
+downloads and an optional, non-blocking "Support KasarTech.ai" prompt before either
+download. No analyzer/parser/scoring/ranking/reports/Supabase code touched.
+
+### Added
+- `public/resumes/template-0{1,2,3}/{resume.pdf,resume.docx}` — the 3 public-safe
+  templates (6 files total).
+- `src/components/resume/resume-examples-grid.tsx` — balanced, non-scrolling
+  responsive grid (1/2/3 columns) for the (currently 3) templates.
+- `src/components/resume/support-download-modal.tsx` — the optional per-download
+  support prompt (exact copy as specified: "Support KasarTech.ai ❤️" /
+  "These resume templates are free to use..." / "Minimum Support: ₹100" /
+  "Continue Free Download" / "Maybe Later" / "No payment is required..."). No QR
+  code — none exists in this codebase; an optional Paytm link appears only if
+  `NEXT_PUBLIC_SUPPORT_PAYTM_URL` is configured, reusing the existing
+  `getSupportPaytmUrl()` helper.
+- `src/lib/utils/download-file.ts` — `downloadFile()`, a small same-origin
+  download-trigger helper used after the support prompt closes.
+
+### Changed
+- `src/config/resume-examples.ts` — full replace: 3 entries now point at the new
+  `template-0N` assets and each carries both `pdfPath` and `docxPath`. Titles are
+  generic ("Template 01/02/03") per the approved naming; role/experience/category
+  badges and description text describe each template's actual layout and level.
+- `src/components/resume/resume-example-card.tsx` — added Download PDF / Download
+  Word as two buttons (was a single PDF-only Download link); both route through the
+  new support prompt via an `onRequestDownload` callback instead of a direct
+  `<a download>`.
+- `src/components/resume/resume-pdf-viewer-modal.tsx` — added a Word download
+  button alongside the existing PDF one (desktop header + mobile footer), both now
+  routed through the same `onRequestDownload` callback. **View/Preview itself is
+  unchanged and still never shows any prompt.**
+- `src/components/resume/resume-examples-section.tsx` — now owns two pieces of
+  modal state (which template is open in the viewer, which download is pending
+  support-prompt confirmation) instead of one; renders the grid + both modals.
+  Eyebrow/heading copy changed from "Resume Examples" to "Resume Templates" to
+  match the approved terminology (the `#examples` anchor id was kept unchanged so
+  the Resume hero's existing "Explore Resume Examples" CTA link still works).
+- `docs/RESUME-ENHANCEMENT.md`, `docs/COMPONENTS.md` — updated to describe the new
+  templates, the grid (replacing the carousel), the DOCX field, and the new support
+  prompt.
+
+### Removed / retired
+- `src/components/resume/resume-examples-carousel.tsx` — deleted. It was a
+  horizontal scroll-snap carousel built for handling more items than fit on screen;
+  with a small, fixed template count a plain responsive grid is simpler and was
+  explicitly requested (no large empty 4th-column gap on desktop).
+- `public/resumes/{software-engineer,qa-automation-engineer,data-analyst}.pdf` —
+  deleted. No longer referenced by `resume-examples.ts` after the template swap;
+  confirmed via repo-wide search that nothing else referenced these paths.
+- `scripts/generate-resume-examples.mjs` — **not deleted**, but now dormant/unused
+  (it generated the 3 fictional PDFs above). Left in place since deleting source
+  code wasn't requested and it's still valid, working code.
+
+### Explicitly not changed (by design)
+- `src/features/analyzer|parser|scoring|ranking|reports`, `src/lib/supabase`,
+  the Resume Analyzer upload UI, the "How to Improve Your Resume" guide section,
+  routing, authentication, and the branding/theme system — untouched.
+- `src/components/resume/support-studycart-section.tsx` (the page-level "Support
+  StudyCart" donation prompt) — separate feature, untouched; still config-driven
+  and disabled until a real Paytm URL is set.
+
 ## KasarTech.ai visual theme + Resume UI (UI/design phase only)
 
 **Scope:** Approved KasarTech.ai visual direction — brand asset consolidation, a

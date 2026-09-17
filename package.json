@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "eslint",
     "test": "vitest run",
-    "generate:resume-examples": "node scripts/generate-resume-examples.mjs"
+    "generate:resume-examples": "node scripts/generate-resume-examples.mjs",
+    "generate:resume-previews": "node scripts/generate-resume-previews.mjs"
   },
   "dependencies": {
     "@napi-rs/canvas": "0.1.80",
