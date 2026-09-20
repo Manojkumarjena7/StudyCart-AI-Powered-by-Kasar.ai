@@ -68,7 +68,7 @@ export function MaterialsBrowser({
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search PDFs..."
-            className="pl-11"
+            className="h-12 pl-11 text-base"
             aria-label="Search study materials"
           />
         </div>
@@ -76,12 +76,12 @@ export function MaterialsBrowser({
           options={SORT_OPTIONS}
           value={sort}
           onChange={(e) => setSort(e.target.value as SortOption)}
-          className="sm:w-48"
+          className="h-12 sm:w-48"
           aria-label="Sort study materials"
         />
       </div>
 
-      <div className="mt-4">
+      <div className="mt-5">
         <CategoryFilter
           categories={categories}
           activeCategoryId={activeCategoryId}
@@ -89,14 +89,14 @@ export function MaterialsBrowser({
         />
       </div>
 
-      <div className="mt-6">
+      <div className="mt-8">
         {filteredResources.length === 0 ? (
           <EmptyState
             title="No study materials found"
             description="Try a different search term or category filter."
           />
         ) : (
-          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {filteredResources.map((resource) => (
               <ResourceCard
                 key={resource.id}

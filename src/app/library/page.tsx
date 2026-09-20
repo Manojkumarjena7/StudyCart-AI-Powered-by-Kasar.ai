@@ -31,7 +31,7 @@ export default async function LibraryPage() {
     <>
       <LibraryHero />
 
-      <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+      <section className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         <LibraryCategoryCards pillars={pillars} />
       </section>
 
@@ -40,20 +40,23 @@ export default async function LibraryPage() {
         description="Structured, video-based courses across programming, testing, and career skills."
         viewAllHref="/library/courses"
       >
-        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
           {featuredCourses.map((course) => (
             <CourseCard key={course.id} course={course} categoryLabel={categoryLabel(course.categoryId)} />
           ))}
         </div>
       </LibrarySection>
 
-      <LibrarySection title="Browse by Category">
-        <div className="flex flex-wrap gap-2">
+      <LibrarySection
+        title="Browse by Category"
+        description="Find content by your area of interest."
+      >
+        <div className="flex flex-wrap gap-2.5">
           {categories.map((category) => (
             <Link
               key={category.id}
               href={`/library/courses?category=${category.slug}`}
-              className="focus-ring rounded-full border border-border-subtle px-4 py-1.5 text-xs font-medium text-text-secondary transition-colors hover:border-brand-cyan/40 hover:text-text-primary"
+              className="focus-ring rounded-full border border-border-subtle px-5 py-2 text-sm font-medium text-text-secondary transition-colors hover:border-brand-cyan/40 hover:text-text-primary"
             >
               {category.label}
             </Link>
@@ -66,7 +69,7 @@ export default async function LibraryPage() {
         description="Notes, cheat sheets, and roadmaps to support your learning."
         viewAllHref="/library/materials"
       >
-        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
           {featuredResources.map((resource) => (
             <ResourceCard
               key={resource.id}

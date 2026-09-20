@@ -11,16 +11,16 @@ interface LibrarySectionProps {
 
 export function LibrarySection({ title, description, viewAllHref, children }: LibrarySectionProps) {
   return (
-    <section className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
+    <section className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8 lg:py-14">
       <div className="flex items-end justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-semibold tracking-tight text-text-primary">{title}</h2>
-          {description && <p className="mt-1.5 max-w-2xl text-sm text-text-secondary">{description}</p>}
+          <h2 className="text-3xl font-semibold tracking-tight text-text-primary">{title}</h2>
+          {description && <p className="mt-2 max-w-2xl text-base text-text-secondary">{description}</p>}
         </div>
         {viewAllHref && (
           <Link
             href={viewAllHref}
-            className="focus-ring flex shrink-0 items-center gap-1 text-sm font-medium text-brand-blue hover:underline"
+            className="focus-ring flex shrink-0 items-center gap-1 text-sm font-semibold text-brand-blue hover:underline"
           >
             View all
             <ArrowRight className="h-3.5 w-3.5" />
@@ -28,7 +28,7 @@ export function LibrarySection({ title, description, viewAllHref, children }: Li
         )}
       </div>
 
-      <div className="mt-6">{children}</div>
+      <div className="mt-8">{children}</div>
     </section>
   );
 }

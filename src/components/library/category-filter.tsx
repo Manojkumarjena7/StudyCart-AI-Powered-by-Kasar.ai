@@ -11,12 +11,12 @@ interface CategoryFilterProps {
 
 export function CategoryFilter({ categories, activeCategoryId, onSelect }: CategoryFilterProps) {
   return (
-    <div className="flex flex-wrap gap-2" role="group" aria-label="Filter by category">
+    <div className="flex flex-wrap gap-2.5" role="group" aria-label="Filter by category">
       <button
         type="button"
         onClick={() => onSelect(null)}
         className={cn(
-          "focus-ring rounded-full border px-4 py-1.5 text-xs font-medium transition-colors",
+          "focus-ring rounded-full border px-5 py-2 text-sm font-medium transition-colors",
           activeCategoryId === null
             ? "border-brand-blue bg-brand-blue text-white"
             : "border-border-subtle text-text-secondary hover:text-text-primary"
@@ -30,7 +30,7 @@ export function CategoryFilter({ categories, activeCategoryId, onSelect }: Categ
           type="button"
           onClick={() => onSelect(category.id)}
           className={cn(
-            "focus-ring rounded-full border px-4 py-1.5 text-xs font-medium transition-colors",
+            "focus-ring rounded-full border px-5 py-2 text-sm font-medium transition-colors",
             activeCategoryId === category.id
               ? "border-brand-blue bg-brand-blue text-white"
               : "border-border-subtle text-text-secondary hover:text-text-primary"
