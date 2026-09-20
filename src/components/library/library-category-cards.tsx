@@ -9,7 +9,7 @@ const PILLAR_LINK_LABEL: Record<string, string> = {
   courses: "Explore Courses",
   materials: "Browse Materials",
   practice: "Start Practicing",
-  community: "Coming Soon",
+  community: "Contribute Now",
 };
 
 export function LibraryCategoryCards({ pillars }: { pillars: LibraryContentPillar[] }) {

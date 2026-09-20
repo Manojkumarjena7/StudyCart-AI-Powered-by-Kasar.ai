@@ -91,7 +91,7 @@ export const libraryContentPillars: LibraryContentPillar[] = [
     icon: "Users",
     title: "Community Resources",
     description: "Useful resources and knowledge shared by learners and professionals.",
-    href: "/library#contribute",
+    href: "/library/contribute",
   },
 ];
 
@@ -318,6 +318,7 @@ export const libraryResources: LibraryResource[] = [
     author: "KasarTech.ai Team",
     featured: true,
     filePath: null,
+    source: "demo",
   },
   {
     id: "selenium-automation-cheat-sheet",
@@ -331,6 +332,7 @@ export const libraryResources: LibraryResource[] = [
     author: "KasarTech.ai Team",
     featured: true,
     filePath: null,
+    source: "demo",
   },
   {
     id: "playwright-testing-guide",
@@ -344,6 +346,7 @@ export const libraryResources: LibraryResource[] = [
     author: "KasarTech.ai Team",
     featured: false,
     filePath: null,
+    source: "demo",
   },
   {
     id: "api-testing-notes",
@@ -357,6 +360,7 @@ export const libraryResources: LibraryResource[] = [
     author: "KasarTech.ai Team",
     featured: false,
     filePath: null,
+    source: "demo",
   },
   {
     id: "genai-testing-roadmap",
@@ -370,6 +374,7 @@ export const libraryResources: LibraryResource[] = [
     author: "KasarTech.ai Team",
     featured: true,
     filePath: null,
+    source: "demo",
   },
   {
     id: "qa-automation-roadmap",
@@ -383,6 +388,7 @@ export const libraryResources: LibraryResource[] = [
     author: "KasarTech.ai Team",
     featured: false,
     filePath: null,
+    source: "demo",
   },
   {
     id: "sql-interview-preparation",
@@ -396,6 +402,7 @@ export const libraryResources: LibraryResource[] = [
     author: "KasarTech.ai Team",
     featured: false,
     filePath: null,
+    source: "demo",
   },
   {
     id: "resume-career-guide",
@@ -409,5 +416,6 @@ export const libraryResources: LibraryResource[] = [
     author: "KasarTech.ai Team",
     featured: true,
     filePath: null,
+    source: "demo",
   },
 ];

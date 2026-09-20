@@ -1,8 +1,12 @@
-import { FileText, Download, User } from "lucide-react";
+"use client";
+
+import { useState } from "react";
+import { FileText, Download, User, Eye } from "lucide-react";
 import type { LibraryResource } from "@/lib/library/types";
 import { Card } from "@/components/shared/ui/card";
 import { Badge } from "@/components/shared/ui/badge";
 import { LibraryIcon } from "@/components/library/library-icon";
+import { PdfPreviewModal } from "@/components/library/pdf-preview-modal";
 
 export function ResourceCard({
   resource,
@@ -11,6 +15,7 @@ export function ResourceCard({
   resource: LibraryResource;
   categoryLabel: string;
 }) {
+  const [previewOpen, setPreviewOpen] = useState(false);
   const isAvailable = Boolean(resource.filePath);
 
   return (
@@ -28,6 +33,7 @@ export function ResourceCard({
       <div className="mt-4 flex flex-wrap gap-1.5">
         <Badge variant="neutral">{categoryLabel}</Badge>
         <Badge variant="neutral">{resource.type}</Badge>
+        {resource.source === "community" && <Badge variant="success">Community</Badge>}
       </div>
 
       <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-sm text-text-secondary">
@@ -44,14 +50,24 @@ export function ResourceCard({
       </div>
 
       {isAvailable ? (
-        <a
-          href={resource.filePath ?? undefined}
-          download
-          className="focus-ring mt-6 flex items-center justify-center gap-1.5 rounded-lg bg-brand-blue px-4 py-3 text-sm font-semibold text-white transition-opacity hover:opacity-90"
-        >
-          <Download className="h-4 w-4" />
-          Download
-        </a>
+        <div className="mt-6 flex gap-2">
+          <button
+            type="button"
+            onClick={() => setPreviewOpen(true)}
+            className="focus-ring flex flex-1 items-center justify-center gap-1.5 rounded-lg border border-border-subtle px-4 py-3 text-sm font-medium text-text-secondary transition-colors hover:text-brand-cyan-light"
+          >
+            <Eye className="h-4 w-4" />
+            View
+          </button>
+          <a
+            href={resource.filePath ?? undefined}
+            download
+            className="focus-ring flex flex-1 items-center justify-center gap-1.5 rounded-lg bg-brand-blue px-4 py-3 text-sm font-semibold text-white transition-opacity hover:opacity-90"
+          >
+            <Download className="h-4 w-4" />
+            Download
+          </a>
+        </div>
       ) : (
         <span
           title="Preview coming soon"
@@ -59,6 +75,14 @@ export function ResourceCard({
         >
           Preview coming soon
         </span>
+      )}
+
+      {isAvailable && (
+        <PdfPreviewModal
+          title={previewOpen ? resource.title : null}
+          pdfPath={previewOpen ? resource.filePath : null}
+          onClose={() => setPreviewOpen(false)}
+        />
       )}
     </Card>
   );

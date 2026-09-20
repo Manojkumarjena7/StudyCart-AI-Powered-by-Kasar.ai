@@ -73,9 +73,43 @@ export interface LibraryResource {
   /** null = no real file exists yet — UI must show "Preview coming soon", never a
    * fabricated download link. See docs/LEARNING-LIBRARY.md §Demo content. */
   filePath: string | null;
+  /** "demo" = curated in src/config/library-data.ts. "community" = derived from an
+   * approved LibraryContribution. Never mislabel one as the other. See
+   * docs/LEARNING-LIBRARY.md §Contribution MVP. */
+  source: "demo" | "community";
+  /** Only set when source === "community" — the originating contribution's id. */
+  contributionId?: string;
 }
 
 export interface LibrarySearchResult {
   courses: LibraryCourse[];
   resources: LibraryResource[];
+}
+
+/**
+ * Local Contribution MVP (Phase 2) — see docs/LEARNING-LIBRARY.md §Contribution MVP.
+ * This is a temporary, local-filesystem-backed model (no Supabase, no auth). It is
+ * deliberately a separate type/repository from the read-only demo content above — see
+ * src/lib/library/contribution-repository.ts for why.
+ */
+export type ContributionStatus = "PENDING" | "APPROVED" | "REJECTED";
+
+export interface LibraryContribution {
+  id: string;
+  title: string;
+  description: string;
+  categoryId: string;
+  topic?: string;
+  contributorName?: string;
+  fileName: string;
+  /** Public URL path under public/uploads/library-contributions/ — see
+   * src/lib/library/contribution-store.ts. Local-dev-only storage. */
+  filePath: string;
+  fileSize: number;
+  /** Extracted from the real PDF via pdf-parse at submission time — never fabricated. */
+  pageCount?: number;
+  status: ContributionStatus;
+  submittedAt: string;
+  reviewedAt?: string;
+  rejectionReason?: string;
 }

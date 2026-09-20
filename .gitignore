@@ -40,3 +40,7 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 .data/
+
+# Library Contribution MVP (Phase 2) — temporary local-dev-only uploads, never
+# committed. See docs/LEARNING-LIBRARY.md §Contribution MVP.
+/public/uploads/

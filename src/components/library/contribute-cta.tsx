@@ -1,12 +1,8 @@
-"use client";
-
-import { useState } from "react";
-import { Users, Sparkles } from "lucide-react";
+import Link from "next/link";
+import { Users } from "lucide-react";
 import { Button } from "@/components/shared/ui/button";
 
 export function ContributeCta() {
-  const [showMessage, setShowMessage] = useState(false);
-
   return (
     <section id="contribute" className="mx-auto max-w-5xl px-4 py-10 sm:px-6 lg:px-8">
       <div className="flex flex-col items-center gap-4 rounded-2xl border border-border-subtle bg-bg-card px-6 py-8 text-center shadow-card sm:flex-row sm:items-center sm:justify-between sm:text-left">
@@ -22,22 +18,12 @@ export function ContributeCta() {
           </div>
         </div>
 
-        <Button
-          type="button"
-          variant="gradient"
-          className="shrink-0"
-          onClick={() => setShowMessage(true)}
-        >
-          Contribute to the Library
-        </Button>
+        <Link href="/library/contribute" className="shrink-0">
+          <Button type="button" variant="gradient">
+            Contribute to the Library
+          </Button>
+        </Link>
       </div>
-
-      {showMessage && (
-        <div className="mt-4 flex items-center gap-2 rounded-xl bg-overlay-soft px-4 py-3 text-sm text-text-secondary">
-          <Sparkles className="h-4 w-4 shrink-0 text-brand-cyan-light" />
-          Community contributions are coming soon.
-        </div>
-      )}
     </section>
   );
 }

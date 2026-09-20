@@ -7,8 +7,13 @@
 > a browsable Library Home, Courses & Videos catalog, a course detail page, and a
 > Study Materials (PDF) browser, all backed by **local/config-driven demo data**, no
 > Supabase, no auth, no admin. This supersedes the earlier "Coming Soon" stub. The
-> "purchase/access → login → controlled reader" flow and the admin/contribution
-> workflow described later in this doc are still **FUTURE** — do not confuse the two.
+> "purchase/access → login → controlled reader" flow described later in this doc is
+> still **FUTURE**.
+>
+> **Revision note (Phase 2 — Local Contribution MVP):** Community PDF contribution is
+> now real, but **explicitly temporary/local-only** — see §Contribution MVP below. No
+> Supabase, no authentication, and no production admin system were added. This is a
+> personal/local review tool, not a secured multi-user admin panel.
 
 ## CURRENT / LIVE (Phase 1 MVP)
 
@@ -58,10 +63,12 @@ Local config data              — src/config/library-data.ts
 | `/library` | Hero + search, 4 content-type tiles, Popular Courses, Browse by Category, Recommended Resources, a "Contribute to the Library" CTA |
 | `/library/courses` | Full course catalog with category filtering (`?category=<slug>`) |
 | `/library/course/[slug]` | Course detail — overview, difficulty/duration/category, a video-preview placeholder (see below), full lesson list, and a resource count with a link into Study Materials |
-| `/library/materials` | Study Materials (PDF) browser — search, category filter, sort, `?category=<slug>` / `?q=<term>` deep-linking |
+| `/library/materials` | Study Materials (PDF) browser — search, category filter, sort, `?category=<slug>` / `?q=<term>` deep-linking. Includes both demo resources and approved community contributions. |
+| `/library/contribute` | Contribution form — Phase 2, see §Contribution MVP |
+| `/library/contributions` | **Local Contribution Review** — Phase 2, temporary/unsecured, see §Contribution MVP |
 
-`/library#contribute` is an anchor to the Library Home's contribution section, not a
-separate route.
+`/library#contribute` is an anchor to the Library Home's contribution section (which
+links into `/library/contribute`), not a separate route.
 
 ### Courses & video lessons
 
@@ -84,13 +91,21 @@ Each resource (`LibraryResource`) has `title`, `description`, `categoryId`, `typ
 (`PDF` | `Cheat Sheet` | `Roadmap` | `Question Bank` | `Guide`), `thumbnailIcon`,
 optional `pageCount`, `tags`, `author`, `featured`, and `filePath`.
 
-**`filePath` is `null` for every demo resource today** — no real PDF assets exist in
-the repository for the Library yet (these are separate from, and must never be
-confused with, the Resume domain's `public/resumes/template-0N/*` files — see
+**`filePath` is `null` for every demo resource** — no real PDF assets exist for the 8
+curated demo materials (these are separate from, and must never be confused with, the
+Resume domain's `public/resumes/template-0N/*` files — see
 [RESUME-ENHANCEMENT.md](./RESUME-ENHANCEMENT.md)). `ResourceCard` checks `filePath`
 and renders a disabled "Preview coming soon" state instead of a download link when it
-is `null`. **No fake download URLs were created.** When real files are added later,
-setting `filePath` is the only change needed — no component logic changes.
+is `null`. **No fake download URLs were created.**
+
+Every `LibraryResource` also has a `source: "demo" | "community"` field. All 8 curated
+entries in `library-data.ts` are `source: "demo"`. Approved contributions (see
+§Contribution MVP) are mapped into the same `LibraryResource` shape with
+`source: "community"` and a real `filePath` — they are never mislabeled as
+KasarTech.ai demo content, and `ResourceCard` shows a "Community" badge for them.
+`/library/materials` merges both lists; demo `filePath: null` entries still show
+"Preview coming soon," while community ones (real uploaded files) show real
+View/Download actions.
 
 ### Search, filter, sort
 
@@ -101,24 +116,132 @@ setting `filePath` is the only change needed — no component logic changes.
   "Recommended / Title (A–Z)" sort. There is no fabricated "Latest" sort — no real
   publish timestamps exist yet.
 
-### Anti-fabrication rule (Phase 1)
+### Anti-fabrication rule
 
-- No real Supabase project, connection, migration, or environment variable was added.
-- No admin UI, authentication, or role model was added.
-- No community contribution upload/backend was built — "Contribute to the Library"
-  shows a clearly labeled "Community contributions are coming soon" message (UI only).
+- No real Supabase project, connection, migration, or environment variable was added
+  (Phase 1 or Phase 2).
+- No production authentication or role model was added.
 - No fabricated learner counts, progress percentages, ratings, or "Latest" timestamps.
+- Contribution page counts are real, extracted from the uploaded PDF via `pdf-parse` —
+  never guessed.
 
-## FUTURE (architected, not built in Phase 1)
+## Contribution MVP (Phase 2 — local/temporary)
 
-### Real backend migration
+**Status: LIVE, but explicitly local-development-only.** This lets a developer
+personally upload a PDF, review it, approve or reject it, and see approved resources
+appear in `/library/materials` — without any real backend. See the flow below and the
+limitations at the end of this section before relying on it for anything beyond local
+testing.
 
-When the platform needs dynamic content, authentication, admin management, student
-contributions, progress tracking, and file storage, a **new, separate Supabase
-project** (see [ARCHITECTURE.md](./ARCHITECTURE.md) §Data ownership — never the
-Government Job Platform's existing Supabase) will back a `SupabaseLibraryRepository`
-implementing the same `LibraryRepository` interface. `getLibraryRepository()` is the
-single call site that changes; no UI component should need to change.
+```
+/library → "Contribute to the Library" → /library/contribute (form)
+    → PDF upload → server-side validation → PENDING contribution
+    → /library/contributions (Local Contribution Review, unsecured)
+    → Approve / Reject
+    → Approved → appears in /library/materials (source: "community")
+```
+
+### Local storage approach
+
+```
+Contribution UI (client components)
+        ↓
+"use server" actions        — src/lib/library/contribution-actions.ts
+        ↓
+ContributionRepository       — src/lib/library/contribution-repository.ts
+        ↓
+Local filesystem store       — src/lib/library/contribution-store.ts
+        ↓
+.data/library-contributions.json (metadata)
+public/uploads/library-contributions/<id>.pdf (the real uploaded file)
+```
+
+- **UI never touches storage directly.** Client components (`ContributionForm`,
+  `ContributionReviewBoard`) call the Server Actions in `contribution-actions.ts` —
+  the same pattern already used by `src/features/analyzer/submitAnalysis.ts` (a plain
+  `"use server"` function called directly from a client component inside
+  `startTransition`, with a `File` passed as a normal argument).
+- **Why this is a separate module from `LibraryRepository`:** `mockLibraryRepository`
+  (repository.ts/mock-repository.ts) is imported by "use client" components (e.g.
+  `library-search.tsx`) and must stay free of Node-only APIs (`node:fs`,
+  `node:crypto`) so it can be bundled for the browser. Contribution storage needs real
+  filesystem access, which can only run on the server. Rather than break that
+  client-safe bundling, contributions get their own parallel repository
+  (`createContributionRepository()` / `getContributionRepository()`), following the
+  same factory-function idiom — never import `contribution-repository.ts` or
+  `contribution-store.ts` from a "use client" file.
+- **Metadata** (`LibraryContribution` records: title, description, category, topic,
+  contributor name, file name/size/page count, status, timestamps, rejection reason)
+  lives in `.data/library-contributions.json` — a local JSON file, mirroring the
+  pattern `src/lib/supabase/repositories/fileStore.ts` already uses for the
+  Government Job Platform's Phase-1 result storage, but kept in a **separate file** so
+  the two domains never share storage.
+- **The actual PDF binary** is written to `public/uploads/library-contributions/`, so
+  it's servable through the exact same plain static-file mechanism already used for
+  demo PDFs — no new file-serving route was built. `.data/` and `/public/uploads/` are
+  both gitignored; nothing uploaded during testing gets committed.
+- **Real server-side validation, not just the file extension:** required fields are
+  checked, the file's reported MIME type must be `application/pdf`, size is capped at
+  20MB, and the actual bytes are parsed with `pdf-parse` (`src/lib/library/pdf-validation.ts`)
+  — a renamed non-PDF file fails this real-content check even if its name/MIME type
+  claims otherwise. A genuine page count is extracted from the same parse and stored
+  on the contribution.
+
+### Contribution states
+
+`PENDING → APPROVED` or `PENDING → REJECTED` (with an optional reason). Only
+`APPROVED` contributions are mapped into `/library/materials` via
+`listApprovedAsResources()`; `PENDING` and `REJECTED` ones are never publicly visible.
+
+### Local Contribution Review (`/library/contributions`)
+
+**This is NOT a secured admin panel.** It has no authentication, no authorization, and
+is reachable by anyone who knows the URL — the page itself displays a warning banner
+saying so, is excluded from search indexing (`robots: noindex`), and is not linked
+from any navigation. Tabs for Pending/Approved/Rejected; each row shows title,
+contributor, category, file name/page count, submitted date, and status. Actions:
+Preview (reuses the same native-browser-PDF-viewer-via-iframe pattern as
+`resume-pdf-viewer-modal.tsx`, in a new library-scoped `PdfPreviewModal` — no new PDF
+rendering dependency was added), Approve, Reject (optional reason), and "Remove" on an
+approved row (re-rejects it — there is no separate "archived" status).
+
+> **Temporary local review interface. Authentication, authorization, persistent
+> storage and secure admin controls will be implemented in the future Supabase/Admin
+> phase.**
+
+### Known limitations (Phase 2)
+
+- Writing into `public/` at runtime only works on a writable local filesystem — it
+  will **not** work on a read-only production deployment (e.g. Vercel). This is
+  explicitly a local-development MVP, not a production upload pipeline.
+- No authentication means contribution identity (`contributorName`) is a free-text,
+  unverified field, and `/library/contributions` has no access control whatsoever.
+- The Library Home search (`repository.search()`) covers demo courses/resources only —
+  it does not currently include community contributions.
+- No file is ever deleted from disk on rejection/removal — only its metadata status
+  changes. Manual cleanup of `public/uploads/library-contributions/` may be needed
+  during local testing.
+
+## FUTURE (architected, not built)
+
+### Future Supabase migration plan
+
+When the platform needs dynamic content, authentication, admin management at scale,
+progress tracking, and durable file storage, a **new, separate Supabase project** (see
+[ARCHITECTURE.md](./ARCHITECTURE.md) §Data ownership — never the Government Job
+Platform's existing Supabase) will replace two things independently, each behind its
+existing swap point:
+
+- `mockLibraryRepository` → a `SupabaseLibraryRepository` implementing the same
+  `LibraryRepository` interface, swapped in `getLibraryRepository()`.
+- `createContributionRepository()`'s local filesystem store →  a Supabase-backed
+  implementation (a `contributions` table + Supabase Storage for the PDF binaries +
+  RLS policies), swapped in `getContributionRepository()`. `/library/contributions`
+  would then also gain real authentication/authorization instead of being an
+  unsecured local tool.
+
+No UI component should need to change for either swap — see §Contribution MVP above
+for why the two repositories are separate today.
 
 ### Content data model (proposed — not yet a database)
 
@@ -148,29 +271,26 @@ Browse (by category) → select content → purchase/access → login → read/v
 
 ### Admin capabilities (architected, not built)
 
-Admin will be able to: upload/edit content, publish/unpublish, categorize, set price,
-manage access rules, and review student contributions (approve/reject). Admin
-functionality must never be exposed to normal users — gate behind role checks once
-auth/roles exist. See [ADMIN-PORTAL.md](./ADMIN-PORTAL.md).
-
-### Student contribution workflow (architected, not built)
-
-```
-Student submits → Pending Review → Admin Review → Approve / Reject → appears in Library
-```
-
-Requires auth (contributor identity), server-side file validation, and the admin
-review surface above — none of which exist yet.
+A real, secured admin surface will be able to: upload/edit content, publish/unpublish,
+categorize, set price, manage access rules, and review contributions with proper
+authentication/authorization — replacing the temporary, unsecured
+`/library/contributions` local tool from Phase 2. Admin functionality must never be
+exposed to normal users — gate behind role checks once auth/roles exist. See
+[ADMIN-PORTAL.md](./ADMIN-PORTAL.md).
 
 ### Authentication requirement
 
 Browsing categories, courses, and titles does not require login today, and this
 continues once purchase/protected content exists — login will only be required to
-purchase, access, or read protected content, or to submit a contribution. See
+purchase, access, or read protected content. Phase 2's contribution submission also
+does not require login (contributor name is optional free text) — a real,
+authenticated contributor identity is part of the future Supabase/Admin phase. See
 [PRODUCT.md](./PRODUCT.md) §Authentication.
 
 ## Status
 
-**Phase 1 MVP: LIVE** (local/config data, no backend). **Real backend (Supabase),
-authentication, admin management, student contributions, and progress tracking: NOT
-implemented — FUTURE.**
+**Phase 1 MVP: LIVE** (local/config data, no backend). **Phase 2 Contribution MVP:
+LIVE, but explicitly local/temporary** — no Supabase, no authentication, no production
+admin system (see §Contribution MVP and §Known limitations). **Real backend
+(Supabase), authentication, and a secured multi-user admin system: NOT implemented —
+FUTURE.**

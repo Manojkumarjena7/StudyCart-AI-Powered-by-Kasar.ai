@@ -38,6 +38,13 @@ export interface LibraryRepository {
   search(query: string): Promise<LibrarySearchResult>;
 }
 
+// Note: Phase 2's Contribution MVP (submit/approve/reject) is intentionally NOT part
+// of this interface. `mockLibraryRepository` is imported by "use client" components
+// (e.g. library-search.tsx) and must stay free of Node-only APIs so it can be bundled
+// for the browser; contribution storage needs real filesystem access and can only run
+// server-side. See src/lib/library/contribution-repository.ts and
+// docs/LEARNING-LIBRARY.md §Contribution MVP.
+
 /**
  * Returns the active Library repository. Today this always returns the local
  * mock/config-backed implementation — do NOT branch on env vars or create a fake
