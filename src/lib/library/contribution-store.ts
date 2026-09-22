@@ -14,7 +14,8 @@ import type { LibraryContribution } from "@/lib/library/types";
  * `public/uploads/library-contributions/` so they're servable via the same plain
  * static-file mechanism already used for demo PDFs (public/resumes/*). This only
  * works because `public/` is writable in local dev — it will NOT work on a read-only
- * production filesystem (e.g. Vercel). Do not rely on this in production; the future
+ * production filesystem (e.g. Vercel). `isUploadsWritableEnvironment()` below is the
+ * single source of truth callers must check before attempting a write; the future
  * Supabase migration replaces this with Supabase Storage. See
  * docs/LEARNING-LIBRARY.md §Future Supabase migration plan.
  */
@@ -30,6 +31,19 @@ export function defaultContributionStorePaths(): ContributionStorePaths {
     dataFile: path.join(dataDir, "library-contributions.json"),
     uploadsDir: path.join(process.cwd(), "public", "uploads", "library-contributions"),
   };
+}
+
+/**
+ * Whether this process can actually persist an uploaded PDF. `public/` is part of
+ * Vercel's read-only deployment bundle at runtime — writing to it there throws
+ * (EROFS), so contribution submission must not even attempt it. Same `VERCEL` signal
+ * already used by src/lib/supabase/repositories/fileStore.ts and
+ * defaultContributionStorePaths() above, kept as one named check so every caller
+ * (the repository's write path, and the /library/contribute page's notice banner)
+ * agrees on the same answer.
+ */
+export function isUploadsWritableEnvironment(): boolean {
+  return !process.env.VERCEL;
 }
 
 export function readContributions(paths: ContributionStorePaths): LibraryContribution[] {

@@ -1,5 +1,5 @@
-import { describe, it, expect, beforeAll, afterAll, beforeEach } from "vitest";
-import { mkdtempSync, rmSync } from "node:fs";
+import { describe, it, expect, beforeAll, afterAll, afterEach, beforeEach, vi } from "vitest";
+import { existsSync, mkdtempSync, readdirSync, rmSync } from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { PDFDocument } from "pdf-lib";
@@ -37,6 +37,10 @@ beforeEach(() => {
 
 afterAll(() => {
   if (tmpDir) rmSync(tmpDir, { recursive: true, force: true });
+});
+
+afterEach(() => {
+  vi.unstubAllEnvs();
 });
 
 describe("submitContribution — validation", () => {
@@ -106,6 +110,28 @@ describe("submitContribution — validation", () => {
     if (!result.ok) {
       expect(result.error).toMatch(/too large/i);
     }
+  });
+});
+
+describe("submitContribution — read-only deployment environment (Vercel)", () => {
+  it("returns a graceful error and writes nothing when VERCEL is set, instead of throwing", async () => {
+    vi.stubEnv("VERCEL", "1");
+
+    const result = await repo.submitContribution({
+      title: "Should Not Save",
+      description: "desc",
+      categoryId: "programming",
+      file: validPdfFile,
+    });
+
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.error).toMatch(/local development/i);
+    }
+
+    // No PDF written, no metadata file created — the fix must fail before touching fs.
+    expect(existsSync(paths.uploadsDir) && readdirSync(paths.uploadsDir).length > 0).toBe(false);
+    expect(existsSync(paths.dataFile)).toBe(false);
   });
 });
 

@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
+import { AlertTriangle } from "lucide-react";
 import { brandConfig } from "@/config/brand";
 import { getLibraryRepository } from "@/lib/library/repository";
+import { isUploadsWritableEnvironment } from "@/lib/library/contribution-store";
 import { ContributionForm } from "@/components/library/contribution-form";
 
 export const metadata: Metadata = {
@@ -10,6 +12,7 @@ export const metadata: Metadata = {
 
 export default async function LibraryContributePage() {
   const categories = await getLibraryRepository().listCategories();
+  const uploadsWritable = isUploadsWritableEnvironment();
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-14 sm:px-6 sm:py-20 lg:px-8">
@@ -25,6 +28,17 @@ export default async function LibraryContributePage() {
           in the Library.
         </p>
       </div>
+
+      {!uploadsWritable && (
+        <div className="mt-8 flex items-start gap-3 rounded-2xl border border-warning/30 bg-warning/10 px-5 py-4">
+          <AlertTriangle className="h-5 w-5 shrink-0 text-warning" />
+          <p className="text-sm text-text-primary">
+            <span className="font-semibold">Uploads aren&apos;t available here yet.</span>{" "}
+            Contribution uploads are only available in local development for this MVP
+            phase — this will be enabled once real storage is connected.
+          </p>
+        </div>
+      )}
 
       <div className="mt-10">
         <ContributionForm categories={categories} />

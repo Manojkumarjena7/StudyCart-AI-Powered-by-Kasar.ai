@@ -3,7 +3,10 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   experimental: {
     serverActions: {
-      bodySizeLimit: "10mb",
+      // Raised from 10mb to accommodate the Library Contribution MVP's 20MB PDF
+      // limit (src/lib/library/contribution-repository.ts) — this is a ceiling only;
+      // each feature still enforces its own smaller limit on top of this.
+      bodySizeLimit: "20mb",
     },
   },
   images: {

@@ -212,8 +212,25 @@ approved row (re-rejects it — there is no separate "archived" status).
 ### Known limitations (Phase 2)
 
 - Writing into `public/` at runtime only works on a writable local filesystem — it
-  will **not** work on a read-only production deployment (e.g. Vercel). This is
-  explicitly a local-development MVP, not a production upload pipeline.
+  does **not** work on a read-only production deployment (e.g. Vercel), since `public/`
+  is part of the immutable deployment bundle there. This is explicitly a
+  local-development MVP, not a production upload pipeline.
+  - **Incident (fixed):** the first version of this phase let that write throw
+    uncaught, which crashed the Server Action and surfaced Next.js's generic "This
+    page couldn't load — A server error occurred" page on the deployed site (the same
+    class of bug `fileStore.ts` hit before it — see commit `e4d7e3d` "Fix Vercel
+    writable storage"). Fixed by `isUploadsWritableEnvironment()`
+    (`src/lib/library/contribution-store.ts`, checks the same `VERCEL` env var):
+    `submitContribution()` now returns a normal `{ ok: false, error }` result before
+    attempting any filesystem write when running in a non-writable environment, shown
+    to the user as an ordinary in-form message ("Contribution uploads are only
+    available in local development for this MVP phase..."), and `/library/contribute`
+    shows the same notice proactively. All three mutating repository methods
+    (submit/approve/reject) also now catch any other unexpected filesystem error
+    rather than letting it escape uncaught.
+  - `next.config.ts`'s `experimental.serverActions.bodySizeLimit` was raised from
+    `10mb` to `20mb` to match the 20MB limit this feature already advertises and
+    enforces (it was silently rejecting any 10–20MB upload before reaching this code).
 - No authentication means contribution identity (`contributorName`) is a free-text,
   unverified field, and `/library/contributions` has no access control whatsoever.
 - The Library Home search (`repository.search()`) covers demo courses/resources only —
@@ -221,6 +238,9 @@ approved row (re-rejects it — there is no separate "archived" status).
 - No file is ever deleted from disk on rejection/removal — only its metadata status
   changes. Manual cleanup of `public/uploads/library-contributions/` may be needed
   during local testing.
+- Uploads remain **disabled entirely on the deployed site** until the Supabase Storage
+  migration below happens — the fix here makes that failure graceful, it does not make
+  uploads work in production.
 
 ## FUTURE (architected, not built)
 
