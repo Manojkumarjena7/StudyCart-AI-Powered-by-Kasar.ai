@@ -26,10 +26,10 @@ const SLIDES = [
   },
   {
     eyebrow: "Resume",
-    title: "Improve Your Resume",
+    title: "Build an ATS-Friendly Resume",
     description:
-      "Upload your resume and see it checked against a curated reference library — clear issues, clear suggestions.",
-    cta: { label: "Improve My Resume", href: "/resume" },
+      "Upload your existing resume or start from scratch — get ATS feedback, a live preview, and a polished, downloadable resume.",
+    cta: { label: "Build My Resume", href: "/resume" },
     Visual: ResumeAnalysisMockup,
   },
   {

@@ -1,0 +1,190 @@
+/*
+ * Template 01 — recreated (not copied) from the visual reference at
+ * public/resumes/template-01/{resume.pdf,preview.png}. Deliberately hand-authored,
+ * unscoped-from-Tailwind CSS (not utility classes / theme tokens): a resume page
+ * must always render as black-on-white regardless of the app's own light/dark
+ * theme. See docs/RESUME-ENHANCEMENT.md §Resume Builder.
+ *
+ * A4 print groundwork only (no export/pagination yet — see §Known limitations):
+ * the page is sized to A4 width with a one-page-equivalent min-height, but content
+ * taller than that is allowed to overflow the page downward rather than being
+ * clipped or paginated.
+ */
+
+.page {
+  width: 210mm;
+  max-width: 100%;
+  min-height: 297mm;
+  box-sizing: border-box;
+  padding: 14mm 16mm;
+  margin: 0 auto;
+  background: #ffffff;
+  color: #1f2937;
+  font-family: Georgia, "Times New Roman", Times, serif;
+  font-size: 12.5px;
+  line-height: 1.5;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.08), 0 20px 45px rgba(15, 23, 42, 0.12);
+}
+
+.nameRow {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 10px 14px;
+}
+
+.name {
+  margin: 0;
+  font-size: 30px;
+  font-weight: 700;
+  line-height: 1.15;
+  color: #111827;
+}
+
+.namePlaceholder {
+  color: #9ca3af;
+  font-style: italic;
+  font-weight: 600;
+}
+
+.headline {
+  font-size: 17px;
+  font-style: italic;
+  color: #374151;
+}
+
+.contactRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 20px;
+  margin-top: 10px;
+}
+
+.contactItem {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 12px;
+  color: #1f2937;
+}
+
+.contactDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #c2610c;
+  flex-shrink: 0;
+}
+
+.summary {
+  margin: 14px 0 0;
+  color: #1f2937;
+  white-space: pre-line;
+}
+
+.columns {
+  display: grid;
+  grid-template-columns: 34% 1fr;
+  gap: 0 26px;
+  margin-top: 18px;
+}
+
+.columnsSingle {
+  grid-template-columns: 1fr;
+}
+
+.section {
+  margin-bottom: 16px;
+  break-inside: avoid;
+}
+
+.sectionTitle {
+  margin: 0 0 8px;
+  font-size: 12.5px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: #111827;
+  border-bottom: 1.5px solid #c2610c;
+  padding-bottom: 4px;
+}
+
+.groupTitle {
+  margin: 10px 0 4px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #111827;
+}
+
+.groupTitle:first-child {
+  margin-top: 0;
+}
+
+.list {
+  margin: 0;
+  padding-left: 15px;
+  list-style: disc;
+}
+
+.list li {
+  margin-bottom: 2px;
+}
+
+.entry {
+  margin-bottom: 12px;
+}
+
+.entry:last-child {
+  margin-bottom: 0;
+}
+
+.entryTitle {
+  font-weight: 700;
+  color: #111827;
+}
+
+.entrySub {
+  font-style: italic;
+  color: #374151;
+}
+
+.entryMeta {
+  font-size: 11px;
+  color: #6b7280;
+  margin: 1px 0 4px;
+}
+
+.certEntry {
+  margin-bottom: 8px;
+}
+
+.certEntry:last-child {
+  margin-bottom: 0;
+}
+
+.plainList {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.plainList li {
+  margin-bottom: 3px;
+}
+
+.link {
+  color: #b45309;
+  font-weight: 600;
+}
+
+@media print {
+  .page {
+    box-shadow: none;
+    margin: 0;
+  }
+}
+
+@page {
+  size: A4;
+  margin: 0;
+}

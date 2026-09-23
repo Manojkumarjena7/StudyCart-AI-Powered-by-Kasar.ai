@@ -5,10 +5,9 @@ export function ResumeShowcase() {
   return (
     <SectionShell
       eyebrow="Resume"
-      title="Upload once. Know exactly what to fix."
-      description="Your resume is checked against a curated reference library of strong fresher, developer, and QA resumes — you get clear, specific issues and suggestions, not a black-box score. Request an enhanced version when you're ready."
-      badge="Coming soon"
-      cta={{ label: "Improve My Resume", href: "/resume" }}
+      title="Build an ATS-friendly resume"
+      description="Upload your existing resume or start from scratch. Get ATS feedback, improve your content, choose a professional design, and download your resume."
+      cta={{ label: "Build My Resume", href: "/resume" }}
       visual={<ResumeAnalysisMockup />}
     />
   );

@@ -151,3 +151,43 @@ body {
   background: rgba(148, 163, 184, 0.25);
   border-radius: 999px;
 }
+
+/*
+ * Resume Builder — print isolation (Phase 4). Standard "print only this element"
+ * technique: hide everything, then re-reveal just the printable resume subtree and
+ * pull it to the page origin so wherever it was nested (editor column, sticky
+ * preview panel, site nav/footer/support button) doesn't offset, clip, or leave it
+ * hidden along with its ancestors. `position: absolute` (not `fixed`) deliberately
+ * — fixed elements do not reliably repeat/paginate across multiple printed pages
+ * in every browser, and a resume longer than one page must be allowed to flow onto
+ * page 2+ rather than being cut off. See docs/RESUME-ENHANCEMENT.md §Resume
+ * Builder — Phase 4 and src/components/resume/templates/printable-resume.tsx.
+ */
+@media print {
+  /* `visibility: hidden` alone leaves every hidden element's layout box in place
+     (it only removes the ink, not the space), so the document stays exactly as
+     tall as the full app UI and Chromium prints several trailing blank pages to
+     cover it. Collapsing html/body to zero height fixes that — the resume itself
+     is unaffected because `.resume-print-target` is `position: absolute` with no
+     positioned ancestor, so its containing block is the page area, not `body`;
+     it paints and paginates by its own content height regardless of body's. */
+  html,
+  body {
+    height: 0 !important;
+    overflow: hidden !important;
+  }
+  body * {
+    visibility: hidden !important;
+  }
+  .resume-print-target,
+  .resume-print-target * {
+    visibility: visible !important;
+  }
+  .resume-print-target {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    margin: 0;
+  }
+}
