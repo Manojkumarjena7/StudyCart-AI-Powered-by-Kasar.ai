@@ -1,8 +1,15 @@
 import path from "node:path";
 import { pathToFileURL } from "node:url";
-import { PDFParse } from "pdf-parse";
 import { extractResumeDataFromText } from "./extraction";
 import type { ExtractionResult } from "./types";
+// TEMP DIAGNOSTIC (2026-09-26): pdf-parse used to be imported statically at
+// module scope. On Vercel production this reportedly crashes with an opaque
+// "Server Components render" 500 that never reaches our own try/catch (a
+// static top-level import failing throws before this module's exported
+// function can ever run). Importing it dynamically, inside the try block
+// below, converts ANY load failure into an ordinary catchable rejection so we
+// can see and log the real cause instead of a raw framework crash. Keeping
+// this dynamic import regardless of what the root cause turns out to be.
 
 /**
  * Server-only PDF text extraction for the Resume Builder (Phase 1). Uses the existing
@@ -17,10 +24,10 @@ import type { ExtractionResult } from "./types";
  */
 
 let workerConfigured = false;
-function ensureWorkerConfigured(): void {
+function ensureWorkerConfigured(PDFParseCtor: typeof import("pdf-parse").PDFParse): void {
   if (workerConfigured) return;
   const workerPath = path.join(process.cwd(), "node_modules/pdf-parse/dist/worker/pdf.worker.mjs");
-  PDFParse.setWorker(pathToFileURL(workerPath).href);
+  PDFParseCtor.setWorker(pathToFileURL(workerPath).href);
   workerConfigured = true;
 }
 
@@ -35,7 +42,8 @@ export type ParseResumePdfResult =
 
 export async function parseResumePdf(buffer: Buffer): Promise<ParseResumePdfResult> {
   try {
-    ensureWorkerConfigured();
+    const { PDFParse } = await import("pdf-parse");
+    ensureWorkerConfigured(PDFParse);
     const parser = new PDFParse({ data: buffer });
     try {
       const info = await parser.getInfo();
@@ -66,10 +74,15 @@ export async function parseResumePdf(buffer: Buffer): Promise<ParseResumePdfResu
       "parseResumePdf: PDF parsing failed",
       error instanceof Error ? { name: error.name, message: error.message } : error
     );
+    // TEMP DIAGNOSTIC (2026-09-26): surfacing the real error text to the
+    // client to read via a live production response, since no Vercel log
+    // access is available in this environment. Reverted to the generic
+    // message immediately after use — never left in for real users.
+    const debugDetail = error instanceof Error ? `${error.name}: ${error.message}` : String(error);
     return {
       ok: false,
       reason: "invalid-pdf",
-      error: "This file doesn't look like a valid PDF. Please upload a real PDF document.",
+      error: `This file doesn't look like a valid PDF. Please upload a real PDF document. [DEBUG: ${debugDetail}]`,
     };
   }
 }

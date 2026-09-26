@@ -43,10 +43,13 @@ export async function extractResumeFromUpload(file: File): Promise<ParseResumePd
       "extractResumeFromUpload: unexpected failure",
       error instanceof Error ? { name: error.name, message: error.message } : error
     );
+    // TEMP DIAGNOSTIC (2026-09-26): see matching note in parser.ts — surfacing
+    // the real error text since no Vercel log access is available here.
+    const debugDetail = error instanceof Error ? `${error.name}: ${error.message}` : String(error);
     return {
       ok: false,
       reason: "unexpected",
-      error: "Something went wrong while reading your resume. Please try again.",
+      error: `Something went wrong while reading your resume. Please try again. [DEBUG: ${debugDetail}]`,
     };
   }
 }
