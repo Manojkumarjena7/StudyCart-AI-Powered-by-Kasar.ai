@@ -4,7 +4,9 @@ import { useRef, useState } from "react";
 import { FileText, UploadCloud, X, AlertCircle } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
 
-const MAX_SIZE_BYTES = 5 * 1024 * 1024; // 5MB, matches the on-page copy
+// 4MB, matches resume-actions.ts's own limit and the on-page copy — kept below
+// Vercel's ~4.5MB hard request-body ceiling for Node.js Serverless Functions.
+const MAX_SIZE_BYTES = 4 * 1024 * 1024;
 
 interface ResumeUploadDropzoneProps {
   file: File | null;
@@ -24,7 +26,7 @@ export function ResumeUploadDropzone({ file, onChange }: ResumeUploadDropzonePro
       return;
     }
     if (selected.size > MAX_SIZE_BYTES) {
-      setError("File is too large — please keep it under 5MB.");
+      setError("File is too large — please keep it under 4MB.");
       return;
     }
     setError(null);
@@ -80,7 +82,7 @@ export function ResumeUploadDropzone({ file, onChange }: ResumeUploadDropzonePro
           <span className="text-sm font-medium text-text-primary">
             Drag &amp; drop your resume PDF here
           </span>
-          <span className="text-xs text-text-secondary">or click to browse · PDF only, max 5MB</span>
+          <span className="text-xs text-text-secondary">or click to browse · PDF only, max 4MB</span>
         </button>
       )}
 

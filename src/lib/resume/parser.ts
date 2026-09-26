@@ -59,7 +59,13 @@ export async function parseResumePdf(buffer: Buffer): Promise<ParseResumePdfResu
     } finally {
       await parser.destroy().catch(() => {});
     }
-  } catch {
+  } catch (error) {
+    // Log only the error's name/message for diagnosability — never the PDF
+    // buffer or any extracted/parsed text, which may contain resume content.
+    console.error(
+      "parseResumePdf: PDF parsing failed",
+      error instanceof Error ? { name: error.name, message: error.message } : error
+    );
     return {
       ok: false,
       reason: "invalid-pdf",
